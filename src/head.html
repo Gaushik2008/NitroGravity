@@ -132,8 +132,9 @@ body{font-family:var(--body);font-feature-settings:'cv11','ss03';-webkit-font-sm
 #launch{border-radius:0;letter-spacing:.2em}
 /* intro hero */
 #intro{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:space-between;color:#fff;overflow-y:auto;
- background:linear-gradient(90deg,rgba(2,4,9,.96) 0%,rgba(2,4,9,.8) 38%,rgba(2,4,9,.25) 72%,rgba(2,4,9,.1) 100%),radial-gradient(120% 90% at 85% 10%,rgba(40,90,170,.35),transparent 60%);
+ background:linear-gradient(90deg,rgba(2,4,9,.99) 0%,rgba(2,4,9,.98) 33%,rgba(2,4,9,.72) 46%,rgba(2,4,9,.25) 74%,rgba(2,4,9,.1) 100%),radial-gradient(120% 90% at 85% 10%,rgba(40,90,170,.35),transparent 60%);
  transition:opacity .7s ease,visibility .7s;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) 0 max(24px,env(safe-area-inset-left,0px))}
+body:has(#intro:not(.gone)) #hudTR,body:has(#intro:not(.gone)) #bar{visibility:hidden}
 #intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #intro .top{display:flex;justify-content:space-between;align-items:center;font:600 11px/1 var(--display);letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.75)}
 #intro .top b{font-weight:800;letter-spacing:.3em;color:#fff}
