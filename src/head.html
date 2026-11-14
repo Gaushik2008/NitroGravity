@@ -1,0 +1,145 @@
+<title>Nitro Gravity</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: mission-control split screen. Engineering bay left (parts, gauges), live 3D launchpad right; stacked on phones. */
+:root{
+ --bg:#0a0e16; --surface:#111826; --surface2:#172133; --line:#243249; --text:#e7edf7; --muted:#93a3bc;
+ --thrust:#ff8a3d; --thrust2:#ffc46b; --cyan:#58d0f5; --ok:#5ee6a8; --warn:#ffcf5a; --bad:#ff6275;
+ --display:'Chakra Petch','Arial Narrow',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+ color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 var(--body);overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#app{height:100%;display:grid;grid-template-columns:minmax(340px,430px) 1fr;grid-template-areas:"bay stage"}
+#bay{grid-area:bay;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+#stage{grid-area:stage;position:relative;min-width:0;min-height:0;background:#0b1424;overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#gl:active{cursor:grabbing}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand h1{font:700 26px/1 var(--display);letter-spacing:.14em;margin:0;text-transform:uppercase}
+.brand h1 span{color:var(--thrust)}
+.brand p{margin:0;color:var(--muted);font-size:12px}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec>h2{font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0;display:flex;justify-content:space-between;align-items:center}
+/* gauges */
+.gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.g{background:var(--surface2);border:1px solid var(--line);padding:9px 10px;display:flex;flex-direction:column;gap:4px;border-radius:4px;min-width:0}
+.g .gl{font:600 10px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.g .gv{font:500 20px/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.g .bar{position:relative;height:5px;background:#0b111c;border-radius:2px;margin-top:2px}
+.g .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--ok);transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.g .bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.85}
+.g.bad .bar i{background:var(--bad)} .g.neutral .bar i{background:var(--cyan)}
+.g .gs{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chip{font:600 10px/1 var(--mono);padding:3px 5px;border-radius:2px;background:rgba(94,230,168,.14);color:var(--ok);white-space:nowrap}
+.g.bad .chip{background:rgba(255,98,117,.16);color:var(--bad)} .g.neutral .chip{background:rgba(88,208,245,.14);color:var(--cyan)}
+.g.bad{border-color:rgba(255,98,117,.45)}
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 8px;font:600 12px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--thrust)}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.card.sel{border-color:var(--thrust)}
+.card .ct{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .ct b{font:600 15px/1.2 var(--display);letter-spacing:.03em}
+.cnt{font:500 12px var(--mono);color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips span{font:500 11px/1 var(--mono);padding:4px 6px;background:#0d1522;border:1px solid var(--line);border-radius:2px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chips span.pos{color:var(--ok)} .chips span.neg{color:var(--warn)}
+.card .note{font-size:12px;color:var(--muted);margin:0}
+.act{display:flex;gap:6px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:8px 12px;min-height:40px;font:600 12px/1 var(--display);letter-spacing:.08em;text-transform:uppercase}
+.btn:hover:not(:disabled){border-color:var(--cyan)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.pri{background:var(--thrust);border-color:var(--thrust);color:#1a0d02}
+.btn.pri:hover:not(:disabled){background:var(--thrust2);border-color:var(--thrust2)}
+.act .btn{flex:1}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row .btn{flex:1 1 auto}
+input[type=range]{width:100%;accent-color:var(--thrust)}
+.fine{font-size:11px;color:var(--muted);margin:0}
+/* stage overlays */
+.ov{position:absolute;pointer-events:none;z-index:2}
+#hudTL{top:12px;left:12px;display:flex;flex-direction:column;gap:6px}
+.pill{display:inline-flex;gap:8px;align-items:center;background:rgba(10,14,22,.72);border:1px solid var(--line);padding:6px 10px;border-radius:3px;font:500 12px var(--mono);backdrop-filter:blur(6px)}
+.pill b{font:600 11px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+#hudTR{top:12px;right:12px;text-align:right;color:var(--muted);font-size:12px;max-width:46%}
+#tele{display:grid;grid-template-columns:repeat(2,auto);gap:4px 14px;background:rgba(10,14,22,.72);border:1px solid var(--line);padding:8px 10px;border-radius:3px;font:500 12px var(--mono);font-variant-numeric:tabular-nums}
+#tele span{color:var(--muted);font:600 10px var(--display);letter-spacing:.12em;text-transform:uppercase;align-self:center}
+#log{left:12px;bottom:70px;max-width:min(380px,62%);display:flex;flex-direction:column;gap:3px;font:500 12px var(--mono)}
+#log div{background:rgba(10,14,22,.72);border-left:2px solid var(--cyan);padding:4px 8px}
+#log div.warn{border-color:var(--warn)} #log div.bad{border-color:var(--bad)} #log div.ok{border-color:var(--ok)}
+#bar{left:0;right:0;bottom:0;display:flex;justify-content:center;gap:8px;padding:12px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));pointer-events:none;flex-wrap:wrap}
+#bar .btn{pointer-events:auto}
+#launch{min-width:210px;font-size:14px;padding:12px 22px;min-height:46px}
+#count{inset:0;display:grid;place-items:center;font:700 min(26vw,180px)/1 var(--display);color:var(--thrust2);text-shadow:0 0 40px rgba(255,138,61,.6)}
+#nogl{inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);pointer-events:auto}
+/* debrief */
+#deb{position:fixed;inset:0;z-index:20;background:rgba(5,8,14,.82);overflow-y:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));backdrop-filter:blur(4px)}
+#deb .sheet{max-width:960px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-direction:column;gap:4px;border-left:4px solid var(--cyan);padding-left:12px}
+.head.ok{border-color:var(--ok)} .head.bad{border-color:var(--bad)} .head.warn{border-color:var(--warn)}
+.head small{font:600 11px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.head h2{font:700 clamp(22px,4vw,32px)/1.1 var(--display);margin:0;text-wrap:balance}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.gc{background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.gc.fail{border-color:rgba(255,98,117,.5)}
+.gc .t{display:flex;justify-content:space-between;gap:8px;font:600 12px var(--display);letter-spacing:.1em;text-transform:uppercase}
+.gc .t em{font-style:normal;color:var(--ok)} .gc.fail .t em{color:var(--bad)}
+.gc p{margin:0;font-size:13px;color:var(--muted)}
+.gc .v{font:500 15px var(--mono)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.charts svg{width:100%;height:auto;background:var(--surface2);border:1px solid var(--line);border-radius:4px}
+.charts text{fill:var(--muted);font:10px var(--mono)} .charts .ln{stroke:var(--cyan);fill:none;stroke-width:1.8} .charts .ax{stroke:var(--line);stroke-width:1} .charts .ev{stroke:var(--thrust);stroke-dasharray:3 3;stroke-width:1} .charts circle{fill:var(--thrust)}
+.fix{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;flex-wrap:wrap}
+.fix div{min-width:0;flex:1 1 220px} .fix b{font:600 14px var(--display)} .fix p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.deltas{display:flex;gap:8px;flex-wrap:wrap}
+.d{font:500 12px var(--mono);padding:5px 8px;background:#0d1522;border:1px solid var(--line);border-radius:2px}
+.d.up{color:var(--ok)} .d.dn{color:var(--warn)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:900px){
+ body{overflow:auto} html,body{height:auto}
+ #app{display:block;height:auto}
+ #stage{height:min(62vh,520px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+ #bay{overflow:visible;border-right:0;padding-right:max(16px,env(safe-area-inset-right,0px))}
+ #hudTR{display:none} #log{bottom:64px;max-width:70%}
+ .gauges{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #launch{min-width:0;flex:1}
+}
+@media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
+</style>
+<div id="app">
+ <section id="stage" aria-label="3D launchpad viewport">
+  <canvas id="gl" aria-label="Interactive 3D rocket. Drag to orbit, scroll to zoom."></canvas>
+  <div class="ov" id="hudTL">
+   <div class="pill"><b>Status</b><span id="status">Build</span></div>
+   <div id="tele" hidden></div>
+  </div>
+  <div class="ov" id="hudTR"><span id="hint">Drag to orbit · Scroll to zoom · L to launch</span><div id="speedRow" style="pointer-events:auto;margin-top:8px;display:flex;gap:6px;justify-content:flex-end" hidden></div></div>
+  <div class="ov" id="log" aria-hidden="true"></div>
+  <div class="ov" id="count" hidden></div>
+  <div class="ov" id="bar"><button class="btn pri" id="launch">Launch</button></div>
+  <div class="ov" id="nogl" hidden><p>3D view needs WebGL, which is not available here.<br>The builder, gauges and simulation still work.</p></div>
+ </section>
+ <aside id="bay" aria-label="Engineering bay">
+  <div class="brand"><h1>Nitro<span> Gravity</span></h1><p>Space mission design game · NASA Space Apps Challenge · Chennai</p></div>
+  <section class="sec" aria-labelledby="hg"><h2 id="hg">Pre-flight gauges <button class="btn" id="mute" style="min-height:28px;padding:5px 8px" aria-pressed="false">Sound on</button></h2><div class="gauges" id="gauges"></div></section>
+  <section class="sec" aria-label="Parts catalog">
+   <div class="tabs" role="tablist" id="tabs"></div>
+   <div class="list" id="catalog" role="tabpanel"></div>
+  </section>
+  <section class="sec" aria-labelledby="hx"><h2 id="hx">Examples &amp; history</h2>
+   <div class="row" id="examples"></div>
+   <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="redo">Redo</button><button class="btn" id="reset">Reset</button></div>
+  </section>
+  <p class="fine">Ascent physics is simplified for learning: a vertical climb with real thrust, mass flow, gravity and drag. Altitude 100 km counts as orbit. Not affiliated with NASA. Team Nitro Gravity, Chennai, India.</p>
+ </aside>
+</div>
+<div id="deb" hidden role="dialog" aria-modal="true" aria-labelledby="debT"></div>
+<div class="sr" aria-live="polite" id="live"></div>
