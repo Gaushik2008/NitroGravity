@@ -6,7 +6,7 @@ Assemble a rocket from parts and structure materials, launch it, and read a debr
 **Rules:** thrust-to-weight >= 1.2, budget <= $1.0M, mass <= 5,000 kg, net power > 0 kW. Liftoff load above 3 g breaks plain aluminium (stronger materials hold more).
 
 ## Run
-Open `index.html` in a browser (Three.js r128 loads from cdnjs). No build step needed.
+Open `index.html` in a browser (Three.js r128 and the Inter font load from CDNs). No build step needed.
 
 ## Develop
 - `src/sim.js` physics, parts, materials, advisor (pure, no DOM)

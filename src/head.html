@@ -1,12 +1,12 @@
 <title>Nitro Gravity</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap">
 <style>
 /* Layout: mission-control split screen. Engineering bay left (parts, gauges), live 3D launchpad right; stacked on phones. */
 :root{
- --bg:#0a0e16; --surface:#111826; --surface2:#172133; --line:#243249; --text:#e7edf7; --muted:#93a3bc;
- --thrust:#ff8a3d; --thrust2:#ffc46b; --cyan:#58d0f5; --ok:#5ee6a8; --warn:#ffcf5a; --bad:#ff6275;
- --display:'Chakra Petch','Arial Narrow',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+ --bg:#04060b; --surface:#080c15; --surface2:#0d1422; --line:#1e2b42; --text:#e7edf7; --muted:#93a3bc;
+ --thrust:#ff6b3d; --thrust2:#ffc46b; --cyan:#58d0f5; --ok:#5ee6a8; --warn:#ffcf5a; --bad:#ff6275;
+ --display:'Inter',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'Inter',system-ui,sans-serif;
  color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -113,6 +113,49 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
  #launch{min-width:0;flex:1}
 }
 @media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
+
+/* ---- v2: Inter, cinematic hero + mission strip (NASA / SpaceX inspired) ---- */
+body{font-family:var(--body);font-feature-settings:'cv11','ss03';-webkit-font-smoothing:antialiased}
+.brand h1{font-weight:800;letter-spacing:.2em;text-shadow:0 0 24px rgba(255,255,255,.25)}
+.sec>h2,.tabs button,.btn,.g .gl,.gc .t,.pill b,#tele span{font-family:var(--display);letter-spacing:.14em}
+.tabs{border-bottom:1px solid var(--line)}
+.tabs button{font-weight:600;font-size:11px;letter-spacing:.16em;padding:10px 9px}
+.tabs button[aria-selected=true]{border-bottom-width:2px;color:#fff}
+.g{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 4px 8px}
+.g.bad{border-top-color:var(--bad)}
+.g .gv{font-weight:300;font-size:24px;letter-spacing:-.01em}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));border-radius:2px}
+.btn{border-radius:0;font-weight:600;font-size:11px;letter-spacing:.16em}
+.btn.pri{box-shadow:0 0 28px rgba(255,107,61,.35)}
+#bay{background:linear-gradient(180deg,#080c15,#04060b)}
+.pill{border-radius:0;border-color:rgba(255,255,255,.14)}
+#launch{border-radius:0;letter-spacing:.2em}
+/* intro hero */
+#intro{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:space-between;color:#fff;overflow-y:auto;
+ background:linear-gradient(90deg,rgba(2,4,9,.96) 0%,rgba(2,4,9,.8) 38%,rgba(2,4,9,.25) 72%,rgba(2,4,9,.1) 100%),radial-gradient(120% 90% at 85% 10%,rgba(40,90,170,.35),transparent 60%);
+ transition:opacity .7s ease,visibility .7s;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) 0 max(24px,env(safe-area-inset-left,0px))}
+#intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+#intro .top{display:flex;justify-content:space-between;align-items:center;font:600 11px/1 var(--display);letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+#intro .top b{font-weight:800;letter-spacing:.3em;color:#fff}
+#intro .mid{max-width:880px;padding:min(8vh,64px) 0 28px;display:flex;flex-direction:column;gap:14px}
+#intro .eyebrow{font:600 11px/1.4 var(--display);letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+#intro .lead{font:300 clamp(26px,4.2vw,56px)/1.05 var(--display);letter-spacing:-.02em;margin:0}
+#intro .lead i{font-style:italic;font-weight:400;color:var(--thrust)}
+#intro h1{margin:0;font:800 clamp(52px,13.5vw,190px)/.88 var(--display);letter-spacing:-.045em;text-transform:uppercase;color:#fff;
+ text-shadow:0 0 18px rgba(255,255,255,.55),0 0 60px rgba(120,170,255,.45);text-wrap:balance}
+#intro p.sub{max-width:520px;margin:6px 0 0;font:400 13px/1.7 var(--body);color:rgba(255,255,255,.72)}
+#begin{align-self:flex-start;margin-top:10px;position:relative;background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:16px 30px;font:600 11px/1 var(--display);letter-spacing:.28em;text-transform:uppercase;transition:background .2s,border-color .2s}
+#begin::before,#begin::after{content:"";position:absolute;width:8px;height:8px;border:2px solid var(--thrust)}
+#begin::before{left:-1px;top:-1px;border-right:0;border-bottom:0}#begin::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+#begin:hover{background:rgba(255,107,61,.14);border-color:var(--thrust)}
+#intro .strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.18);margin:0 calc(-1*max(24px,env(safe-area-inset-right,0px))) 0 calc(-1*max(24px,env(safe-area-inset-left,0px)));background:rgba(2,4,9,.55);backdrop-filter:blur(8px)}
+#intro .strip div{padding:16px 24px 18px;border-left:1px solid rgba(255,255,255,.14);min-width:0}
+#intro .strip div:first-child{border-left:0}
+#intro .strip span{display:block;font:600 10px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
+#intro .strip b{font:300 clamp(18px,2.4vw,30px)/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+#intro .strip b small{font-size:.5em;font-weight:500;letter-spacing:.12em;margin-left:6px;color:rgba(255,255,255,.6)}
+@media (max-width:700px){#intro .strip{grid-template-columns:repeat(2,1fr)}#intro .strip div:nth-child(3){border-left:0}#intro .strip div:nth-child(n+3){border-top:1px solid rgba(255,255,255,.14)}}
+@media (prefers-reduced-motion:reduce){#intro{transition:none}}
 </style>
 <div id="app">
  <section id="stage" aria-label="3D launchpad viewport">
@@ -140,6 +183,17 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
   </section>
   <p class="fine">Ascent physics is simplified for learning: a vertical climb with real thrust, mass flow, gravity and drag. Altitude 100 km counts as orbit. Not affiliated with NASA. Team Nitro Gravity, Chennai, India.</p>
  </aside>
+</div>
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="introT">
+ <div class="top"><b>Nitro Gravity</b><span>NASA Space Apps Challenge · Chennai</span></div>
+ <div class="mid">
+  <div class="eyebrow">Mission design game · Team Nitro Gravity</div>
+  <p class="lead">Build it. Launch it. <i>Reach</i> orbit.</p>
+  <h1 id="introT">Nitro<br>Gravity</h1>
+  <p class="sub">Assemble a rocket from real-world parts and structure materials, balance thrust, mass, power and budget, then launch and read a debrief that names the exact cause of success or failure.</p>
+  <button id="begin" class="btn">Take the first step</button>
+ </div>
+ <div class="strip"><div><span>Target altitude</span><b>100<small>KM</small></b></div><div><span>Min thrust / weight</span><b>1.20<small>×</small></b></div><div><span>Budget ceiling</span><b>$1.00<small>M</small></b></div><div><span>Mass limit</span><b>5,000<small>KG</small></b></div></div>
 </div>
 <div id="deb" hidden role="dialog" aria-modal="true" aria-labelledby="debT"></div>
 <div class="sr" aria-live="polite" id="live"></div>
