@@ -1,5 +1,5 @@
 'use strict';
-const G0=9.81, RE=6371000, TARGET_ALT=100000, DT=0.05;
+let TARGET_ALT=100000; const G0=9.81, RE=6371000, DT=0.05;
 const LIM={twr:1.2,budget:1000000,mass:5000};
 const MATS={
  'al-standard':{n:'Aluminium',m:1,c:1,t:1,s:1,h:1,note:'Baseline. No surprises.'},
@@ -21,15 +21,22 @@ const PARTS=[
  {id:'spectrometer',name:'Spectrometer',cat:'payload',dry:150,prop:0,cost:110000,thrust:0,power:-1.5,hours:60,max:1,payload:true},
  {id:'radar',name:'Radar',cat:'payload',dry:300,prop:0,cost:180000,thrust:0,power:-2.5,hours:90,max:1,payload:true}
 ];
+const FUELS={
+ solid:{n:'Solid',sub:'Simple and cheap. Strong kick, lower efficiency.',isp:.78,thrust:1.15,cost:.6,dry:1,f1:0xff7a2a,f2:0xffe6a0},
+ liquid:{n:'Liquid · kerolox',sub:'Balanced RP-1 and liquid oxygen.',isp:1,thrust:1,cost:1,dry:1,f1:0xff8a3d,f2:0xfff2c8},
+ cryo:{n:'Cryogenic · LH2/LOX',sub:'Best efficiency. Costly, bulky insulated tanks.',isp:1.22,thrust:.92,cost:1.55,dry:1.14,f1:0x6fa8ff,f2:0xe8f2ff},
+ hybrid:{n:'Hybrid',sub:'Safer and throttleable. Moderate performance.',isp:.9,thrust:.95,cost:.8,dry:1.04,f1:0xff5a2e,f2:0xffd29a}
+};
+function fxOf(b){return Object.assign({},FUELS[b.fuel]||FUELS.liquid,{load:b.load==null?1:b.load});}
 const PBY={}; PARTS.forEach(p=>PBY[p.id]=p);
 function matFor(b,p){ if(!p.struct) return MATS['al-standard']; if(p.id==='core-stage'&&b.mat==='printed') return MATS['al-standard']; return MATS[b.mat]; }
 function count(b,id){ const p=PBY[id]; return p.fixed?1:(b.counts[id]||0); }
 function evalBuild(b){
- let mass=0,cost=0,thrust=0,power=0,hours=0,payload=0,types=0;
+ let mass=0,cost=0,thrust=0,power=0,hours=0,payload=0,types=0; const F=fxOf(b);
  for(const p of PARTS){
   const n=count(b,p.id); if(!n) continue; types++;
   const mm=matFor(b,p);
-  mass+=n*(p.dry*mm.m+p.prop); cost+=n*p.cost*mm.c; thrust+=n*p.thrust; power+=n*p.power;
+  const pr=p.thrust>0; mass+=n*(p.dry*mm.m*(pr?F.dry:1)+p.prop*(pr?F.load:1)); cost+=n*p.cost*mm.c*(pr?F.cost:1); thrust+=n*p.thrust*(pr?F.thrust:1); power+=n*p.power;
   let h=0; for(let i=0;i<n;i++) h+=p.hours*mm.t*Math.max(.6,1-.08*i); hours+=h;
   if(p.payload) payload+=n*p.dry;
  }
@@ -49,15 +56,15 @@ function evalBuild(b){
  return {mass,cost,thrust,power,twr,hours,days,payload,limit,gates,allPass};
 }
 function newFlight(b){
- const d=evalBuild(b); const mmc=matFor(b,PBY['core-stage']);
+ const d=evalBuild(b); const mmc=matFor(b,PBY['core-stage']); const F=fxOf(b);
  let staticDry=0; const boosters=[];
  for(const p of PARTS){ const n=count(b,p.id); const mm=matFor(b,p);
   for(let i=0;i<n;i++){
-   if(p.booster) boosters.push({id:p.id,dry:p.dry*mm.m,prop:p.prop,thrust:p.thrust,isp:p.isp,attached:true});
+   if(p.booster) boosters.push({id:p.id,dry:p.dry*mm.m*F.dry,prop:p.prop*F.load,thrust:p.thrust*F.thrust,isp:p.isp*F.isp,attached:true});
    else if(p.id!=='core-stage') staticDry+=p.dry*mm.m;
   }}
  return {d,t:0,y:0,v:0,maxY:0,maxQ:0,q:0,a:0,staticDry,
-  core:{dry:450*mmc.m,prop:1350,thrust:30000,isp:360},boosters,
+  core:{dry:450*mmc.m*F.dry,prop:1350*F.load,thrust:30000*F.thrust,isp:360*F.isp},boosters,
   phase:d.gates.twr.pass?'burn':'shake',events:[],outcome:null,mq:false,liftoff:false,meco:false,thrusting:false,jett:[]};
 }
 function fmass(f){ let m=f.staticDry+f.core.dry+f.core.prop; for(const b of f.boosters) if(b.attached) m+=b.dry+b.prop; return m; }
@@ -90,7 +97,7 @@ function stepFlight(f){
  if(f.t>3000){ f.phase='done'; f.outcome='SUBORBITAL'; }
 }
 function runHeadless(b){ const f=newFlight(b); let n=0; while(f.phase==='burn'&&n++<80000) stepFlight(f); if(f.phase==='shake'){ f.outcome='PAD_CRASH'; } return f; }
-function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew}; }
+function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew,fuel:b.fuel,load:b.load}; }
 function boosterTotal(b){ return (b.counts['booster-side']||0)+(b.counts['booster-heavy']||0); }
 function canAdd(b,id){ const p=PBY[id]; if(p.fixed) return false; if((b.counts[id]||0)>=p.max) return false; if(p.booster&&boosterTotal(b)>=2) return false; return true; }
 function efficiency(d,f){
@@ -110,6 +117,7 @@ function neighbors(b){
   if(canAdd(b,p.id)){ const c=clone(b); c.counts[p.id]=(c.counts[p.id]||0)+1; cands.push({b:c,label:'Add '+p.name}); }
   if((b.counts[p.id]||0)>0){ const c=clone(b); c.counts[p.id]--; cands.push({b:c,label:'Remove '+p.name}); } }
  for(const k in MATS){ if(k!==b.mat){ const c=clone(b); c.mat=k; cands.push({b:c,label:'Switch structure to '+MATS[k].n}); } }
+ for(const k in FUELS){ if(k!==(b.fuel||'liquid')){ const c=clone(b); c.fuel=k; cands.push({b:c,label:'Switch propellant to '+FUELS[k].n}); } }
  if(b.crew<10){ const c=clone(b); c.crew++; cands.push({b:c,label:'Hire one more crew member'}); }
  if(b.crew>4){ const c=clone(b); c.crew--; cands.push({b:c,label:'Release one crew member'}); }
  return cands;
@@ -133,4 +141,4 @@ const EXAMPLES={
  B:{name:'B · Clean orbit',counts:{camera:1,'solar-wing':1,'booster-side':1},mat:'al-standard',crew:4},
  C:{name:'C · Heavy hauler',counts:{'booster-heavy':2,radar:1,spectrometer:1,'solar-wing':1,rtg:1},mat:'al-standard',crew:4}
 };
-if(typeof module!=='undefined') module.exports={improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
+if(typeof module!=='undefined') module.exports={FUELS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};

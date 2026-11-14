@@ -157,44 +157,127 @@ body:has(#intro:not(.gone)) #hudTR,body:has(#intro:not(.gone)) #bar{visibility:h
 #intro .strip b small{font-size:.5em;font-weight:500;letter-spacing:.12em;margin-left:6px;color:rgba(255,255,255,.6)}
 @media (max-width:700px){#intro .strip{grid-template-columns:repeat(2,1fr)}#intro .strip div:nth-child(3){border-left:0}#intro .strip div:nth-child(n+3){border-top:1px solid rgba(255,255,255,.14)}}
 @media (prefers-reduced-motion:reduce){#intro{transition:none}}
+
+/* ---- v3 layout: parts bay | stage | mission data ---- */
+#app{display:grid;height:100%;grid-template-columns:minmax(270px,310px) minmax(0,1fr) minmax(300px,350px);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top top top" "parts stage mission"}
+#top{grid-area:top;display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;background:#03050a;border-bottom:1px solid var(--line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#top .brand{flex-direction:row;align-items:baseline;gap:16px}
+#top .brand h1{font-size:17px}
+#mname{font:600 11px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+#top .sp{flex:1}
+#top .row{flex-wrap:nowrap}#top .row .btn{flex:0 0 auto;min-height:32px;padding:7px 11px}
+.rail{overflow-y:auto;background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:18px;min-width:0}
+#parts{grid-area:parts;border-right:1px solid var(--line)}
+#mission{grid-area:mission;border-left:1px solid var(--line)}
+#stage{grid-area:stage}
+/* gauge strip */
+#gstrip{position:absolute;left:0;right:0;bottom:0;z-index:3;background:linear-gradient(0deg,rgba(2,4,9,.94),rgba(2,4,9,.62));border-top:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px)}
+#gstrip .gauges{grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:0}
+#gstrip .g{border:0;border-left:1px solid rgba(255,255,255,.1);padding:10px 12px 9px}
+#gstrip .g:first-child{border-left:0}
+#gstrip .g.bad{border-top:0;background:rgba(255,98,117,.07)}
+#gstrip .g .gv{font-size:19px}
+#gstrip .g .gs span:last-child{display:none}
+#bar{left:auto;right:0;bottom:calc(var(--gh,92px) + 6px);justify-content:flex-end}
+#log{bottom:calc(var(--gh,92px) + 14px)}
+#launch{min-width:190px}
+/* forms */
+.form{display:flex;flex-direction:column;gap:14px}
+.form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px 40px;max-width:1040px}
+.fld{display:flex;flex-direction:column;gap:7px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld>span{display:flex;justify-content:space-between;gap:10px;font:600 10px/1.2 var(--display);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.fld output{font:500 12px var(--display);letter-spacing:.04em;color:#fff;font-variant-numeric:tabular-nums;text-transform:none}
+.fld input[type=text]{background:#04070d;border:1px solid var(--line);color:#fff;padding:10px 12px;font:500 14px var(--body);width:100%;border-radius:0}
+.fld input[type=text]:focus{border-color:var(--thrust);outline:0}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.opt{background:transparent;border:1px solid var(--line);border-radius:0;text-align:left;padding:9px 10px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt b{font:600 12px/1.2 var(--display);letter-spacing:.02em}
+.opt small{font-size:10.5px;line-height:1.35;color:var(--muted)}
+.opt small.st{font-variant-numeric:tabular-nums;color:#7f90ab}
+.opt:hover:not(:disabled){border-color:rgba(255,255,255,.4)}
+.opt.sel{border-color:var(--thrust);background:rgba(255,107,61,.09)}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+#mission .opts{grid-template-columns:1fr 1fr}
+/* intro step 2 */
+#introB{display:none}
+#intro.step2 #introA{display:none}
+#intro.step2 #introB{display:flex;max-width:1040px}
+#introB h2{margin:0;font:300 clamp(26px,3.6vw,48px)/1.05 var(--display);letter-spacing:-.02em}
+#introB .fld>span{color:rgba(255,255,255,.65)}
+#enter{align-self:flex-start;min-height:48px;padding:14px 26px;letter-spacing:.2em}
+/* cards / installed */
+.card[data-drag]{cursor:grab;user-select:none;-webkit-user-select:none}
+.card[data-drag]:hover{border-color:rgba(255,255,255,.35)}
+.card .ct{justify-content:flex-start;align-items:center}.card .ct .cnt{margin-left:auto}
+.grip{touch-action:none;cursor:grab;color:#5d6f8c;letter-spacing:-.25em;padding:2px 8px 2px 0;font-weight:700;user-select:none}
+.inst{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface2);padding:6px 8px;user-select:none;-webkit-user-select:none}
+.inst[data-drag-rm]{cursor:grab}.inst.lock{opacity:.7}
+.inst b{font:600 12px var(--display);letter-spacing:.04em;flex:1;min-width:0}
+.inst .btn{min-height:26px;padding:4px 9px}
+.ghost{position:fixed;left:0;top:0;z-index:100;pointer-events:none;padding:10px 14px;background:var(--thrust);color:#1a0d02;font:700 11px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;margin:-18px 0 0 -48px;box-shadow:0 12px 44px rgba(255,107,61,.55);white-space:nowrap}
+#stage::after{content:"Drop part to attach";position:absolute;inset:12px;display:grid;place-items:center;border:2px dashed transparent;color:transparent;font:600 12px var(--display);letter-spacing:.26em;text-transform:uppercase;pointer-events:none;z-index:4;transition:border-color .15s,background .15s,color .15s}
+body.drag-add #stage::after{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.5)}
+body.drag-add #stage.over::after{border-color:var(--thrust);color:var(--thrust);background:rgba(255,107,61,.1)}
+body.drag-rm #parts.over{outline:2px dashed var(--bad);outline-offset:-4px}
+body.drag-add,body.drag-rm{cursor:grabbing;user-select:none}
+@media (max-width:1100px){
+ body{overflow:auto}html,body{height:auto}
+ #app{display:block;height:auto}
+ #stage{height:min(64vh,560px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+ .rail{overflow:visible;border:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ #hudTR{display:none}
+}
 </style>
 <div id="app">
+ <header id="top">
+  <div class="brand"><h1>Nitro<span> Gravity</span></h1><span id="mname">Aurora-1</span></div>
+  <span class="sp"></span>
+  <div class="row" id="examples" aria-label="Example designs"></div>
+  <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="redo">Redo</button><button class="btn" id="reset">Reset</button><button class="btn" id="mute" aria-pressed="false">Sound on</button></div>
+ </header>
  <section id="stage" aria-label="3D launchpad viewport">
   <canvas id="gl" aria-label="Interactive 3D rocket. Drag to orbit, scroll to zoom."></canvas>
   <div class="ov" id="hudTL">
    <div class="pill"><b>Status</b><span id="status">Build</span></div>
    <div id="tele" hidden></div>
   </div>
-  <div class="ov" id="hudTR"><span id="hint">Drag to orbit · Scroll to zoom · L to launch</span><div id="speedRow" style="pointer-events:auto;margin-top:8px;display:flex;gap:6px;justify-content:flex-end" hidden></div></div>
+  <div class="ov" id="hudTR"><span id="hint">Drag parts onto the rocket · Drag empty space to orbit · L to launch</span><div id="speedRow" style="pointer-events:auto;margin-top:8px;display:flex;gap:6px;justify-content:flex-end" hidden></div></div>
   <div class="ov" id="log" aria-hidden="true"></div>
   <div class="ov" id="count" hidden></div>
   <div class="ov" id="bar"><button class="btn pri" id="launch">Launch</button></div>
+  <div id="gstrip" aria-label="Pre-flight gauges"><div class="gauges" id="gauges"></div></div>
   <div class="ov" id="nogl" hidden><p>3D view needs WebGL, which is not available here.<br>The builder, gauges and simulation still work.</p></div>
  </section>
- <aside id="bay" aria-label="Engineering bay">
-  <div class="brand"><h1>Nitro<span> Gravity</span></h1><p>Space mission design game · NASA Space Apps Challenge · Chennai</p></div>
-  <section class="sec" aria-labelledby="hg"><h2 id="hg">Pre-flight gauges <button class="btn" id="mute" style="min-height:28px;padding:5px 8px" aria-pressed="false">Sound on</button></h2><div class="gauges" id="gauges"></div></section>
-  <section class="sec" aria-label="Parts catalog">
+ <aside id="parts" class="rail" aria-label="Parts bay">
+  <section class="sec"><h2>Parts bay</h2><p class="fine">Drag a part onto the rocket, or press Add.</p>
    <div class="tabs" role="tablist" id="tabs"></div>
    <div class="list" id="catalog" role="tabpanel"></div>
   </section>
-  <section class="sec" aria-labelledby="hx"><h2 id="hx">Examples &amp; history</h2>
-   <div class="row" id="examples"></div>
-   <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="redo">Redo</button><button class="btn" id="reset">Reset</button></div>
-  </section>
-  <p class="fine">Ascent physics is simplified for learning: a vertical climb with real thrust, mass flow, gravity and drag. Altitude 100 km counts as orbit. Not affiliated with NASA. Team Nitro Gravity, Chennai, India.</p>
+ </aside>
+ <aside id="mission" class="rail" aria-label="Mission data">
+  <section class="sec"><h2>Mission data</h2><div class="form" id="missionForm"></div></section>
+  <section class="sec"><h2>On the rocket</h2><div class="list" id="installed"></div><p class="fine">Drag a part back to the parts bay to remove it.</p></section>
+  <p class="fine">Ascent physics is simplified for learning: a vertical climb with real thrust, mass flow, gravity and drag. Reaching your target altitude counts as orbit. Not affiliated with NASA. Team Nitro Gravity, Chennai, India.</p>
  </aside>
 </div>
 <div id="intro" role="dialog" aria-modal="true" aria-labelledby="introT">
  <div class="top"><b>Nitro Gravity</b><span>NASA Space Apps Challenge · Chennai</span></div>
- <div class="mid">
+ <div class="mid" id="introA">
   <div class="eyebrow">Mission design game · Team Nitro Gravity</div>
   <p class="lead">Build it. Launch it. <i>Reach</i> orbit.</p>
   <h1 id="introT">Nitro<br>Gravity</h1>
   <p class="sub">Assemble a rocket from real-world parts and structure materials, balance thrust, mass, power and budget, then launch and read a debrief that names the exact cause of success or failure.</p>
   <button id="begin" class="btn">Take the first step</button>
  </div>
- <div class="strip"><div><span>Target altitude</span><b>100<small>KM</small></b></div><div><span>Min thrust / weight</span><b>1.20<small>×</small></b></div><div><span>Budget ceiling</span><b>$1.00<small>M</small></b></div><div><span>Mass limit</span><b>5,000<small>KG</small></b></div></div>
+ <div class="mid" id="introB">
+  <div class="eyebrow">Step 1 of 2 · Mission brief</div>
+  <h2>Tell us about your mission.</h2>
+  <p class="sub">These limits decide what counts as a pass. You can change every value later from the Mission data panel.</p>
+  <div class="form grid" id="setupForm"></div>
+  <button id="enter" class="btn pri">Enter the assembly bay</button>
+ </div>
+ <div class="strip"><div><span>Target altitude</span><b><span id="sAlt">100</span><small>KM</small></b></div><div><span>Min thrust / weight</span><b>1.20<small>×</small></b></div><div><span>Total budget</span><b>$<span id="sBud">1.00</span><small>M</small></b></div><div><span>Mass limit</span><b><span id="sMass">5,000</span><small>KG</small></b></div></div>
 </div>
 <div id="deb" hidden role="dialog" aria-modal="true" aria-labelledby="debT"></div>
 <div class="sr" aria-live="polite" id="live"></div>
