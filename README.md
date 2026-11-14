@@ -11,7 +11,7 @@ Open `index.html` in a browser (Three.js r128 and the Inter font load from CDNs)
 ## Develop
 - `src/sim.js` physics, parts, materials, advisor (pure, no DOM)
 - `src/app.js` Three.js scene, UI, debrief
-- `src/head.html` markup and styles
+- `src/head.html` markup and styles (three-panel layout: parts bay, 3D stage, mission data)
 - `python3 build.py` rebuilds `index.html`
 - `node tests/sim-golden.js` prints the three golden builds (A crashes, B reaches orbit, C fails power and budget)
 
