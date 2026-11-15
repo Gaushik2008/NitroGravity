@@ -1,21 +1,22 @@
 <title>Nitro Gravity</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
 /* Layout: mission-control split screen. Engineering bay left (parts, gauges), live 3D launchpad right; stacked on phones. */
 :root{
  --bg:#0a0e16; --surface:#111826; --surface2:#172133; --line:#243249; --text:#e7edf7; --muted:#93a3bc;
  --thrust:#ff8a3d; --thrust2:#ffc46b; --cyan:#58d0f5; --ok:#5ee6a8; --warn:#ffcf5a; --bad:#ff6275;
- --display:'Chakra Petch','Arial Narrow',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+ --display:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Inter',system-ui,sans-serif; --accent:#58d0f5;
  color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 var(--body);overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 var(--body);overflow:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+body[data-world=moon]{--accent:#dfe6f2} body[data-world=mars]{--accent:#ff9a5c}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-#app{height:100%;display:grid;grid-template-columns:minmax(340px,430px) 1fr;grid-template-areas:"bay stage"}
+#app{height:100%;padding-top:56px;display:grid;grid-template-columns:minmax(340px,430px) 1fr;grid-template-areas:"bay stage"}
 #bay{grid-area:bay;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
 #stage{grid-area:stage;position:relative;min-width:0;min-height:0;background:#0b1424;overflow:hidden}
 #gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
@@ -26,6 +27,39 @@ button{font:inherit;color:inherit;cursor:pointer}
 .brand p{margin:0;color:var(--muted);font-size:12px}
 .sec{display:flex;flex-direction:column;gap:10px}
 .sec>h2{font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0;display:flex;justify-content:space-between;align-items:center}
+
+/* nav + hero (cinematic landing, inspired by planetary mission sites) */
+#nav{position:absolute;top:0;left:0;right:0;height:56px;z-index:8;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+#nav .logo{font:800 17px/1 var(--display);letter-spacing:.28em;text-transform:uppercase;display:flex;align-items:center;gap:10px;background:none;border:0}
+#nav .logo i{width:22px;height:22px;border-radius:50%;border:2px solid var(--thrust);display:inline-block;position:relative}
+#nav .logo i::after{content:"";position:absolute;left:3px;right:3px;top:50%;height:2px;background:var(--thrust);transform:rotate(-28deg)}
+#nav nav{display:flex;gap:6px;align-items:center}
+#nav nav button{background:none;border:0;padding:8px 10px;font:600 11px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+#nav nav button:hover,#nav nav button[aria-current=true]{color:var(--text)}
+#app.hero{padding-top:0;grid-template-columns:0 1fr}
+#app.hero #bay,#app.hero #bar,#app.hero #hudTL,#app.hero #hudTR,#app.hero #log{display:none}
+#app.hero #nav{background:linear-gradient(#05070c99,transparent);border-bottom:0}
+#hero{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;justify-content:flex-end;padding:72px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));background:linear-gradient(90deg,rgba(3,5,10,.82) 0%,rgba(3,5,10,.35) 48%,transparent 72%),linear-gradient(0deg,rgba(3,5,10,.9) 0,transparent 38%);pointer-events:none}
+#app.hero #hero{display:flex}
+#hero>*{pointer-events:auto}
+.wtabs{display:flex;gap:18px;margin-bottom:22px}
+.wtabs button{background:none;border:0;padding:6px 0;font:700 11px/1 var(--display);letter-spacing:.22em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent}
+.wtabs button[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
+.eyebrow{font:500 clamp(14px,2.2vw,21px)/1 var(--display);letter-spacing:.14em;text-transform:uppercase;margin:0 0 6px;color:var(--text)}
+.eyebrow b{color:var(--accent);font-weight:700}
+#hero h2{font:900 clamp(64px,15vw,200px)/.9 var(--display);letter-spacing:-.045em;margin:0 0 18px;text-transform:uppercase;text-shadow:0 0 60px color-mix(in srgb,var(--accent) 45%,transparent);transition:opacity .3s}
+#hero p.copy{max-width:470px;margin:0 0 22px;color:#c4cfe2;font-size:clamp(13px,1.4vw,15px);line-height:1.6}
+.cta{align-self:flex-start;display:inline-flex;gap:12px;align-items:center;margin-bottom:26px;padding:15px 24px;background:var(--thrust);color:#1a0d02;border:0;font:800 12px/1 var(--display);letter-spacing:.18em;text-transform:uppercase;border-radius:2px}
+.cta:hover{background:var(--thrust2)}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.22);margin-top:0}
+.strip div{padding:14px 12px 18px;border-left:1px solid rgba(255,255,255,.22);min-width:0}
+.strip div:first-child{border-left:0;padding-left:0}
+.strip small{display:block;font:600 10px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.strip b{font:800 clamp(16px,2.6vw,28px)/1.1 var(--display);letter-spacing:.02em;word-break:break-word}
+.strip b span{font-size:.5em;font-weight:600;color:var(--muted);margin-left:5px}
+.wsel{display:flex;gap:6px}
+.wsel button{flex:1;padding:9px 6px;background:var(--surface2);border:1px solid var(--line);border-radius:3px;font:700 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.wsel button[aria-pressed=true]{color:var(--text);border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
 /* gauges */
 .gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .g{background:var(--surface2);border:1px solid var(--line);padding:9px 10px;display:flex;flex-direction:column;gap:4px;border-radius:4px;min-width:0}
@@ -104,6 +138,9 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 .d.up{color:var(--ok)} .d.dn{color:var(--warn)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:900px){
+ #app.hero{display:block} #app.hero #stage{height:calc(100vh - 0px);position:relative} #hero{padding-bottom:0} #nav nav button{padding:8px 6px;letter-spacing:.1em} #nav .logo{letter-spacing:.16em;font-size:14px}
+ #app{padding-top:56px} #app.hero{padding-top:0}
+ .strip{grid-template-columns:repeat(2,minmax(0,1fr))} .strip div:nth-child(3){border-left:0;padding-left:0}
  body{overflow:auto} html,body{height:auto}
  #app{display:block;height:auto}
  #stage{height:min(62vh,520px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
@@ -114,8 +151,10 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 }
 @media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
 </style>
-<div id="app">
+<div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button data-view="build" id="nv-build">Build &amp; launch</button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
+<div id="app" class="hero">
  <section id="stage" aria-label="3D launchpad viewport">
+  <div id="hero"><div class="wtabs" id="wtabs"></div><div class="eyebrow" id="hEye"></div><h2 id="hTitle"></h2><p class="copy" id="hCopy"></p><button class="cta" data-view="build">Begin mission <span aria-hidden="true">→</span></button><div class="strip" id="hStrip"></div></div>
   <canvas id="gl" aria-label="Interactive 3D rocket. Drag to orbit, scroll to zoom."></canvas>
   <div class="ov" id="hudTL">
    <div class="pill"><b>Status</b><span id="status">Build</span></div>
@@ -128,8 +167,8 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
   <div class="ov" id="nogl" hidden><p>3D view needs WebGL, which is not available here.<br>The builder, gauges and simulation still work.</p></div>
  </section>
  <aside id="bay" aria-label="Engineering bay">
-  <div class="brand"><h1>Nitro<span> Gravity</span></h1><p>Space mission design game · NASA Space Apps Challenge · Chennai</p></div>
-  <section class="sec" aria-labelledby="hg"><h2 id="hg">Pre-flight gauges <button class="btn" id="mute" style="min-height:28px;padding:5px 8px" aria-pressed="false">Sound on</button></h2><div class="gauges" id="gauges"></div></section>
+  <section class="sec"><h2>Destination</h2><div class="wsel" id="wsel"></div></section>
+  <section class="sec" aria-labelledby="hg"><h2 id="hg">Pre-flight gauges</h2><div class="gauges" id="gauges"></div></section>
   <section class="sec" aria-label="Parts catalog">
    <div class="tabs" role="tablist" id="tabs"></div>
    <div class="list" id="catalog" role="tabpanel"></div>

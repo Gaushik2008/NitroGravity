@@ -19,3 +19,7 @@ Open `index.html` in a browser (Three.js r128 loads from cdnjs). No build step n
 Agency flag creator, grid VAB, docking, landing, re-entry. Full spec in `docs/BUILD_PROMPT.md`.
 
 Ascent physics is simplified for learning. Not affiliated with NASA.
+
+## v2 changes
+- Inter typography and a cinematic landing page with Earth, Moon and Mars destinations (per-world gravity, air density and sky).
+- Upgraded 3D models: ogive nose, bell engines, grid fins, panel lines, decal, segmented solar wings, lattice launch tower, floodlights, exhaust light, image-based reflections.

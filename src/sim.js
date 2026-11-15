@@ -1,5 +1,6 @@
 'use strict';
 const G0=9.81, RE=6371000, TARGET_ALT=100000, DT=0.05;
+const WORLDS={earth:{n:'Earth',g:9.81,R:6371000,rho:1.225,H:8500},moon:{n:'Moon',g:1.62,R:1737400,rho:0,H:1000},mars:{n:'Mars',g:3.71,R:3389500,rho:.02,H:11100}};
 const LIM={twr:1.2,budget:1000000,mass:5000};
 const MATS={
  'al-standard':{n:'Aluminium',m:1,c:1,t:1,s:1,h:1,note:'Baseline. No surprises.'},
@@ -34,7 +35,7 @@ function evalBuild(b){
   if(p.payload) payload+=n*p.dry;
  }
  cost+=(b.crew-4)*30000;
- const twr=thrust/(mass*G0);
+ const W=WORLDS[b.world||'earth'];const twr=thrust/(mass*W.g);const loadG=thrust/(mass*G0);
  const days=hours*(1+.04*(types-1))/(b.crew*8);
  const limit=3*MATS[b.mat].s;
  const E=1e-9;
@@ -43,10 +44,10 @@ function evalBuild(b){
   budget:{id:'BUDGET',pass:cost<=LIM.budget+E,value:cost,limit:LIM.budget},
   mass:{id:'MASS',pass:mass<=LIM.mass+E,value:mass,limit:LIM.mass},
   power:{id:'POWER',pass:power>E,value:power,limit:0},
-  struct:{id:'STRUCT',pass:twr<=limit+E,value:twr,limit}
+  struct:{id:'STRUCT',pass:loadG<=limit+E,value:loadG,limit}
  };
  const allPass=Object.values(gates).every(g=>g.pass);
- return {mass,cost,thrust,power,twr,hours,days,payload,limit,gates,allPass};
+ return {mass,cost,thrust,power,twr,loadG,world:b.world||'earth',hours,days,payload,limit,gates,allPass};
 }
 function newFlight(b){
  const d=evalBuild(b); const mmc=matFor(b,PBY['core-stage']);
@@ -56,7 +57,7 @@ function newFlight(b){
    if(p.booster) boosters.push({id:p.id,dry:p.dry*mm.m,prop:p.prop,thrust:p.thrust,isp:p.isp,attached:true});
    else if(p.id!=='core-stage') staticDry+=p.dry*mm.m;
   }}
- return {d,t:0,y:0,v:0,maxY:0,maxQ:0,q:0,a:0,staticDry,
+ return {W:WORLDS[b.world||'earth'],d,t:0,y:0,v:0,maxY:0,maxQ:0,q:0,a:0,staticDry,
   core:{dry:450*mmc.m,prop:1350,thrust:30000,isp:360},boosters,
   phase:d.gates.twr.pass?'burn':'shake',events:[],outcome:null,mq:false,liftoff:false,meco:false,thrusting:false,jett:[]};
 }
@@ -71,33 +72,34 @@ function stepFlight(f){
  for(const b of f.boosters){ if(b.attached&&b.prop>0){ const full=b.thrust/(b.isp*G0)*dt; const dm=Math.min(b.prop,full); F+=b.thrust*dm/full; b.prop-=dm; if(b.prop<=0){ b.attached=false; f.jett.push(b); ev(f,'Booster burnout and separation'); } } }
  f.thrusting=F>0;
  const m=fmass(f);
- const rho=1.225*Math.exp(-f.y/8500);
+ const W=f.W;const rho=W.rho*Math.exp(-f.y/W.H);
  const drag=0.5*rho*f.v*Math.abs(f.v)*1.0;
- const g=G0*Math.pow(RE/(RE+f.y),2);
+ const g=W.g*Math.pow(W.R/(W.R+f.y),2);
  const a=(F-drag)/m-g;
  f.a=a; f.v+=a*dt; f.y+=f.v*dt; if(f.y<0){f.y=0; if(f.v<0) f.v=0;}
  f.t+=dt; if(f.y>f.maxY) f.maxY=f.y;
  const q=0.5*rho*f.v*f.v; f.q=q;
  if(!f.liftoff&&f.y>5){f.liftoff=true; ev(f,'Liftoff');}
- if(q>f.maxQ) f.maxQ=q; else if(!f.mq&&f.maxQ>1000&&q<f.maxQ*.97){ f.mq=true; ev(f,'Max-Q passed ('+(f.maxQ/1000).toFixed(1)+' kPa)');
-   if(!f.d.gates.struct.pass){ f.phase='breakup'; f.outcome='BREAKUP'; ev(f,'Structure failed under '+f.d.twr.toFixed(2)+' g load'); return; } }
+ if(!f.strc&&f.y>150){f.strc=true; if(!f.d.gates.struct.pass){ f.phase='breakup'; f.outcome='BREAKUP'; ev(f,'Structure failed under '+f.d.loadG.toFixed(2)+' g load'); return; } }
+ if(q>f.maxQ) f.maxQ=q; else if(!f.mq&&f.maxQ>1000&&q<f.maxQ*.97){ f.mq=true; ev(f,'Max-Q passed ('+(f.maxQ/1000).toFixed(1)+' kPa)'); }
  if(!f.meco&&f.core.prop<=0){ f.meco=true; ev(f,'Core engine cutoff at '+(f.y/1000).toFixed(1)+' km'); }
- if(f.meco&&F===0&&f.v<=0){
+ if(f.meco&&F===0&&(f.v<=0||f.y>=TARGET_ALT)){
+  if(f.v>0) f.maxY=Math.max(f.maxY,f.y+f.v*f.v/(2*g));
   f.phase='done';
   if(f.maxY>=TARGET_ALT) f.outcome=f.d.power>1e-9?'ORBIT':'POWER'; else f.outcome='SUBORBITAL';
-  ev(f,'Apogee '+(f.maxY/1000).toFixed(1)+' km');
+  ev(f,(f.v>0?'Reached ':'Apogee ')+(f.maxY/1000).toFixed(1)+' km');
  }
  if(f.t>3000){ f.phase='done'; f.outcome='SUBORBITAL'; }
 }
 function runHeadless(b){ const f=newFlight(b); let n=0; while(f.phase==='burn'&&n++<80000) stepFlight(f); if(f.phase==='shake'){ f.outcome='PAD_CRASH'; } return f; }
-function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew}; }
+function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew,world:b.world||'earth'}; }
 function boosterTotal(b){ return (b.counts['booster-side']||0)+(b.counts['booster-heavy']||0); }
 function canAdd(b,id){ const p=PBY[id]; if(p.fixed) return false; if((b.counts[id]||0)>=p.max) return false; if(p.booster&&boosterTotal(b)>=2) return false; return true; }
 function efficiency(d,f){
  const mf=Math.min(1,(d.payload/d.mass)/.2);
  const ce=Math.max(0,1-d.cost/LIM.budget);
  const te=Math.max(0,1-d.days/45);
- const tw=d.twr>=1.2&&d.twr<=2.2?1:Math.max(0,1-Math.abs(d.twr-1.7)/1.5);
+ const tw=d.loadG>=1.2&&d.loadG<=2.2?1:Math.max(0,1-Math.abs(d.loadG-1.7)/1.5);
  const pu=d.power>0?1:0;
  return Math.round(100*(.3*mf+.25*ce+.2*te+.15*tw+.1*pu));
 }
@@ -133,4 +135,4 @@ const EXAMPLES={
  B:{name:'B · Clean orbit',counts:{camera:1,'solar-wing':1,'booster-side':1},mat:'al-standard',crew:4},
  C:{name:'C · Heavy hauler',counts:{'booster-heavy':2,radar:1,spectrometer:1,'solar-wing':1,rtg:1},mat:'al-standard',crew:4}
 };
-if(typeof module!=='undefined') module.exports={improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
+if(typeof module!=='undefined') module.exports={WORLDS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
