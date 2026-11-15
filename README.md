@@ -23,3 +23,6 @@ Ascent physics is simplified for learning. Not affiliated with NASA.
 ## v2 changes
 - Inter typography and a cinematic landing page with Earth, Moon and Mars destinations (per-world gravity, air density and sky).
 - Upgraded 3D models: ogive nose, bell engines, grid fins, panel lines, decal, segmented solar wings, lattice launch tower, floodlights, exhaust light, image-based reflections.
+
+## Deploy to Vercel
+Import this repo at vercel.com/new. It is a static site: no build command, output directory `.` (already set in `vercel.json`).
