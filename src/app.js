@@ -147,7 +147,7 @@ function init3D(){
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
  cv.addEventListener('wheel',e=>{e.preventDefault();cam.dist=clamp(cam.dist*(1+Math.sign(e.deltaY)*.08),7,80);cam.user=4;},{passive:false});
 }
-function resize(){if(!R)return;const s=$('#stage');const w=s.clientWidth||600,h=s.clientHeight||400;R.setSize(w,h,false);camera.aspect=w/h;if(view==='hero'&&w>900&&mode==='build')camera.setViewOffset(w,h,-w*.2,0,w,h);else camera.clearViewOffset();camera.updateProjectionMatrix();}
+function resize(){if(!R)return;const s=$('#stage');const w=s.clientWidth||600,h=s.clientHeight||400;R.setSize(w,h,false);camera.aspect=w/h;if(view==='hero'&&mode==='build'){if(w>900)camera.setViewOffset(w,h,-w*.2,0,w,h);else camera.setViewOffset(w,h,0,h*.2,w,h);}else camera.clearViewOffset();camera.updateProjectionMatrix();}
 const vis=a=>9*Math.pow(Math.max(a,0),.6);
 function skyFor(alt){const L=LOOK[curWorld];const t=clamp(alt/70000,0,1);const k=curWorld==='moon'?0:t;scene.background.setRGB((L.sky[0]+(2-L.sky[0])*k)/255,(L.sky[1]+(4-L.sky[1])*k)/255,(L.sky[2]+(10-L.sky[2])*k)/255);
  stars.material.opacity=curWorld==='moon'?1:L.star+(1-L.star)*clamp((alt-6000)/40000,0,1);
@@ -304,7 +304,7 @@ function showDeb(){
  const asc=G.twr.pass?'<div class="gc'+(fl.maxY>=100000?'':' fail')+'"><div class="t"><span>Ascent</span><em>'+(fl.maxY>=100000?'✓ Reached 100 km':'✕ Short')+'</em></div><div class="v">'+(fl.maxY/1000).toFixed(1)+' km apogee</div><p>'+(fl.maxY>=100000?'Enough delta-v to reach orbital altitude.':'The propellant ran out too early. Cut mass or add thrust and fuel.')+'</p></div>':'';
  const cmp=lastRun?['cost','days','eff'].map(k=>{const dv=({cost:d.cost-lastRun.cost,days:d.days-lastRun.days,eff:eff-lastRun.eff})[k];const good=k==='eff'?dv>0:dv<0;const name={cost:'Cost',days:'Build time',eff:'Efficiency'}[k];const txt=k==='cost'?(dv>=0?'+':'−')+money(Math.abs(dv)):k==='days'?(dv>=0?'+':'−')+Math.abs(dv).toFixed(1)+' d':(dv>=0?'+':'')+dv;return '<span class="d '+(dv===0?'':good?'up':'dn')+'">'+name+' '+txt+'</span>';}).join(''):'<span class="d">First attempt</span>';
  let fixes='';
- if(!allOk){const adv=advise(build);fixes=adv.length?adv.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>'+(a.fixed.length?'Fixes '+a.fixed.map(x=>x.toLowerCase()).join(', ')+'. ':'')+(a.left.length?'Still failing: '+a.left.map(x=>x.toLowerCase()).join(', ')+'. ':'Clears every check. ')+'New thrust-to-weight '+a.d.twr.toFixed(2)+', cost '+money(a.d.cost)+'.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single change fixes this. Try an example design or reset.</p>';}
+ if(!allOk){const adv=advise(build);fixes=adv.length?adv.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>'+(a.fixed.length?'Fixes '+a.fixed.map(x=>(FAIL_TXT(x)||x).toLowerCase()).join(', ')+'. ':'')+(a.left.length?'Still failing: '+a.left.map(x=>(FAIL_TXT(x)||x).toLowerCase()).join(', ')+'. ':'Clears every check. ')+'New thrust-to-weight '+a.d.twr.toFixed(2)+', cost '+money(a.d.cost)+'.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single change fixes this. Try an example design or reset.</p>';}
  else{const imp=improve(build);fixes=imp.length?imp.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>Efficiency '+eff+' → '+a.eff+'. Cost '+money(a.d.cost)+', build time '+a.d.days.toFixed(1)+' days.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single swap beats this design. Strong build.</p>';window._imp=imp;}
  window._adv=allOk?window._imp:advise(build);
  lastRun={cost:d.cost,days:d.days,eff:eff};
@@ -335,7 +335,7 @@ function renderHero(){const w=build.world,c=COPY[w];
  $('#wsel').innerHTML=Object.keys(COPY).map(k=>'<button data-world="'+k+'" aria-pressed="'+(k===w)+'">'+WN[k]+'</button>').join('');}
 function setWorld(w){if(mode!=='build'||!COPY[w])return;if(w!==build.world){build.world=w;cache.clear();}document.body.dataset.world=w;applyWorld(w);renderHero();renderAll();logEv('Destination: '+WN[w],'');announce('Destination '+WN[w]);}
 function setView(v){if(mode!=='build'&&v==='hero')return;view=v;$('#app').classList.toggle('hero',v==='hero');$('#nv-hero').setAttribute('aria-current',String(v==='hero'));$('#nv-build').setAttribute('aria-current',String(v==='build'));
- cam.user=0;cam.pol=v==='hero'?1.42:1.32;cam.dist=v==='hero'?24:17;if(v==='build')renderAll();
+ cam.user=0;cam.pol=v==='hero'?1.42:1.32;cam.dist=v==='hero'?(innerWidth<900?34:24):17;if(v==='build')renderAll();
  setTimeout(resize,30);}
 
 /* ---------- events ---------- */

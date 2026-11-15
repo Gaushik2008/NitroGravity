@@ -103,7 +103,7 @@ function efficiency(d,f){
  const pu=d.power>0?1:0;
  return Math.round(100*(.3*mf+.25*ce+.2*te+.15*tw+.1*pu));
 }
-const FAIL_TXT=g=>({TWR:'Not enough thrust',BUDGET:'Over budget',MASS:'Over mass limit',POWER:'Power deficit',STRUCT:'Structure overloaded'}[g]);
+const FAIL_TXT=g=>({TWR:'Not enough thrust',BUDGET:'Over budget',MASS:'Over mass limit',POWER:'Power deficit',STRUCT:'Structure overloaded',DELTAV:'Not enough delta-v'}[g]);
 function failures(b){ const f=runHeadless(b); const d=f.d; const list=[]; for(const k in d.gates) if(!d.gates[k].pass) list.push(k);
  if(!list.length&&f.outcome==='SUBORBITAL') list.push('DELTAV'); return {f,list,score:list.length}; }
 function neighbors(b){

@@ -29,7 +29,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sec>h2{font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0;display:flex;justify-content:space-between;align-items:center}
 
 /* nav + hero (cinematic landing, inspired by planetary mission sites) */
-#nav{position:absolute;top:0;left:0;right:0;height:56px;z-index:8;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+#nav{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;height:56px;z-index:8;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
 #nav .logo{font:800 17px/1 var(--display);letter-spacing:.28em;text-transform:uppercase;display:flex;align-items:center;gap:10px;background:none;border:0}
 #nav .logo i{width:22px;height:22px;border-radius:50%;border:2px solid var(--thrust);display:inline-block;position:relative}
 #nav .logo i::after{content:"";position:absolute;left:3px;right:3px;top:50%;height:2px;background:var(--thrust);transform:rotate(-28deg)}
@@ -138,20 +138,34 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 .d.up{color:var(--ok)} .d.dn{color:var(--warn)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:900px){
- #app.hero{display:block} #app.hero #stage{height:calc(100vh - 0px);position:relative} #hero{padding-bottom:0} #nav nav button{padding:8px 6px;letter-spacing:.1em} #nav .logo{letter-spacing:.16em;font-size:14px}
- #app{padding-top:56px} #app.hero{padding-top:0}
- .strip{grid-template-columns:repeat(2,minmax(0,1fr))} .strip div:nth-child(3){border-left:0;padding-left:0}
  body{overflow:auto} html,body{height:auto}
- #app{display:block;height:auto}
- #stage{height:min(62vh,520px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
- #bay{overflow:visible;border-right:0;padding-right:max(16px,env(safe-area-inset-right,0px))}
- #hudTR{display:none} #log{bottom:64px;max-width:70%}
- .gauges{grid-template-columns:repeat(2,minmax(0,1fr))}
- #launch{min-width:0;flex:1}
+ #app{display:block;height:auto;padding-top:56px}
+ #app.hero{padding-top:0}
+ #stage{height:clamp(300px,46vh,460px);position:sticky;top:calc(56px + env(safe-area-inset-top,0px));z-index:5}
+ #app.hero #stage{height:100vh;height:100dvh;position:relative;top:0}
+ #nav{position:fixed}
+ #nav .logo{letter-spacing:.12em;font-size:12px;gap:7px;white-space:nowrap}
+ #nav .logo i{width:18px;height:18px}
+ #nav nav{gap:0}
+ #nav nav button{padding:8px 7px;letter-spacing:.08em;font-size:10px;min-height:40px;white-space:nowrap}
+ #nav .lg{display:none}
+ #hero{padding-top:64px}
+ #hero h2{font-size:clamp(72px,24vw,150px)}
+ .strip{grid-template-columns:repeat(2,minmax(0,1fr))} .strip div:nth-child(3){border-left:0;padding-left:0}
+ #bay{overflow:visible;border-right:0;padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+ #hudTR{max-width:none}#hint{display:none}
+ #hudTL{top:8px;left:8px} #hudTR{top:8px;right:8px}
+ #tele{font-size:11px;padding:6px 8px;gap:3px 10px}
+ #log{bottom:62px;max-width:72%;font-size:11px}
+ #launch{min-width:0;flex:1;max-width:420px}
+ #speedRow .btn{min-height:36px!important;padding:5px 9px!important}
+ #deb .sheet{padding:14px} .fix .btn{width:100%}
+ .charts{grid-template-columns:1fr}
 }
+@media (max-width:900px) and (orientation:landscape){#stage{height:clamp(240px,70vh,420px)}}
 @media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
 </style>
-<div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button data-view="build" id="nv-build">Build &amp; launch</button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
+<div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
 <div id="app" class="hero">
  <section id="stage" aria-label="3D launchpad viewport">
   <div id="hero"><div class="wtabs" id="wtabs"></div><div class="eyebrow" id="hEye"></div><h2 id="hTitle"></h2><p class="copy" id="hCopy"></p><button class="cta" data-view="build">Begin mission <span aria-hidden="true">→</span></button><div class="strip" id="hStrip"></div></div>
@@ -290,7 +304,7 @@ function efficiency(d,f){
  const pu=d.power>0?1:0;
  return Math.round(100*(.3*mf+.25*ce+.2*te+.15*tw+.1*pu));
 }
-const FAIL_TXT=g=>({TWR:'Not enough thrust',BUDGET:'Over budget',MASS:'Over mass limit',POWER:'Power deficit',STRUCT:'Structure overloaded'}[g]);
+const FAIL_TXT=g=>({TWR:'Not enough thrust',BUDGET:'Over budget',MASS:'Over mass limit',POWER:'Power deficit',STRUCT:'Structure overloaded',DELTAV:'Not enough delta-v'}[g]);
 function failures(b){ const f=runHeadless(b); const d=f.d; const list=[]; for(const k in d.gates) if(!d.gates[k].pass) list.push(k);
  if(!list.length&&f.outcome==='SUBORBITAL') list.push('DELTAV'); return {f,list,score:list.length}; }
 function neighbors(b){
@@ -475,7 +489,7 @@ function init3D(){
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
  cv.addEventListener('wheel',e=>{e.preventDefault();cam.dist=clamp(cam.dist*(1+Math.sign(e.deltaY)*.08),7,80);cam.user=4;},{passive:false});
 }
-function resize(){if(!R)return;const s=$('#stage');const w=s.clientWidth||600,h=s.clientHeight||400;R.setSize(w,h,false);camera.aspect=w/h;if(view==='hero'&&w>900&&mode==='build')camera.setViewOffset(w,h,-w*.2,0,w,h);else camera.clearViewOffset();camera.updateProjectionMatrix();}
+function resize(){if(!R)return;const s=$('#stage');const w=s.clientWidth||600,h=s.clientHeight||400;R.setSize(w,h,false);camera.aspect=w/h;if(view==='hero'&&mode==='build'){if(w>900)camera.setViewOffset(w,h,-w*.2,0,w,h);else camera.setViewOffset(w,h,0,h*.2,w,h);}else camera.clearViewOffset();camera.updateProjectionMatrix();}
 const vis=a=>9*Math.pow(Math.max(a,0),.6);
 function skyFor(alt){const L=LOOK[curWorld];const t=clamp(alt/70000,0,1);const k=curWorld==='moon'?0:t;scene.background.setRGB((L.sky[0]+(2-L.sky[0])*k)/255,(L.sky[1]+(4-L.sky[1])*k)/255,(L.sky[2]+(10-L.sky[2])*k)/255);
  stars.material.opacity=curWorld==='moon'?1:L.star+(1-L.star)*clamp((alt-6000)/40000,0,1);
@@ -632,7 +646,7 @@ function showDeb(){
  const asc=G.twr.pass?'<div class="gc'+(fl.maxY>=100000?'':' fail')+'"><div class="t"><span>Ascent</span><em>'+(fl.maxY>=100000?'✓ Reached 100 km':'✕ Short')+'</em></div><div class="v">'+(fl.maxY/1000).toFixed(1)+' km apogee</div><p>'+(fl.maxY>=100000?'Enough delta-v to reach orbital altitude.':'The propellant ran out too early. Cut mass or add thrust and fuel.')+'</p></div>':'';
  const cmp=lastRun?['cost','days','eff'].map(k=>{const dv=({cost:d.cost-lastRun.cost,days:d.days-lastRun.days,eff:eff-lastRun.eff})[k];const good=k==='eff'?dv>0:dv<0;const name={cost:'Cost',days:'Build time',eff:'Efficiency'}[k];const txt=k==='cost'?(dv>=0?'+':'−')+money(Math.abs(dv)):k==='days'?(dv>=0?'+':'−')+Math.abs(dv).toFixed(1)+' d':(dv>=0?'+':'')+dv;return '<span class="d '+(dv===0?'':good?'up':'dn')+'">'+name+' '+txt+'</span>';}).join(''):'<span class="d">First attempt</span>';
  let fixes='';
- if(!allOk){const adv=advise(build);fixes=adv.length?adv.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>'+(a.fixed.length?'Fixes '+a.fixed.map(x=>x.toLowerCase()).join(', ')+'. ':'')+(a.left.length?'Still failing: '+a.left.map(x=>x.toLowerCase()).join(', ')+'. ':'Clears every check. ')+'New thrust-to-weight '+a.d.twr.toFixed(2)+', cost '+money(a.d.cost)+'.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single change fixes this. Try an example design or reset.</p>';}
+ if(!allOk){const adv=advise(build);fixes=adv.length?adv.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>'+(a.fixed.length?'Fixes '+a.fixed.map(x=>(FAIL_TXT(x)||x).toLowerCase()).join(', ')+'. ':'')+(a.left.length?'Still failing: '+a.left.map(x=>(FAIL_TXT(x)||x).toLowerCase()).join(', ')+'. ':'Clears every check. ')+'New thrust-to-weight '+a.d.twr.toFixed(2)+', cost '+money(a.d.cost)+'.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single change fixes this. Try an example design or reset.</p>';}
  else{const imp=improve(build);fixes=imp.length?imp.map((a,i)=>'<div class="fix"><div><b>'+a.label+'</b><p>Efficiency '+eff+' → '+a.eff+'. Cost '+money(a.d.cost)+', build time '+a.d.days.toFixed(1)+' days.</p></div><button class="btn pri" data-apply="'+i+'">Apply</button></div>').join(''):'<p class="fine">No single swap beats this design. Strong build.</p>';window._imp=imp;}
  window._adv=allOk?window._imp:advise(build);
  lastRun={cost:d.cost,days:d.days,eff:eff};
@@ -663,7 +677,7 @@ function renderHero(){const w=build.world,c=COPY[w];
  $('#wsel').innerHTML=Object.keys(COPY).map(k=>'<button data-world="'+k+'" aria-pressed="'+(k===w)+'">'+WN[k]+'</button>').join('');}
 function setWorld(w){if(mode!=='build'||!COPY[w])return;if(w!==build.world){build.world=w;cache.clear();}document.body.dataset.world=w;applyWorld(w);renderHero();renderAll();logEv('Destination: '+WN[w],'');announce('Destination '+WN[w]);}
 function setView(v){if(mode!=='build'&&v==='hero')return;view=v;$('#app').classList.toggle('hero',v==='hero');$('#nv-hero').setAttribute('aria-current',String(v==='hero'));$('#nv-build').setAttribute('aria-current',String(v==='build'));
- cam.user=0;cam.pol=v==='hero'?1.42:1.32;cam.dist=v==='hero'?24:17;if(v==='build')renderAll();
+ cam.user=0;cam.pol=v==='hero'?1.42:1.32;cam.dist=v==='hero'?(innerWidth<900?34:24):17;if(v==='build')renderAll();
  setTimeout(resize,30);}
 
 /* ---------- events ---------- */
