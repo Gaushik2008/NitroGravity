@@ -113,6 +113,8 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 #bar .btn{pointer-events:auto}
 #launch{min-width:210px;font-size:14px;padding:12px 22px;min-height:46px}
 #count{inset:0;display:grid;place-items:center;font:700 min(26vw,180px)/1 var(--display);color:var(--thrust2);text-shadow:0 0 40px rgba(255,138,61,.6)}
+#banner{bottom:130px;left:50%;transform:translateX(-50%);max-width:86%;text-align:center;background:rgba(10,14,22,.85);border:1px solid var(--line);border-left:3px solid var(--thrust);padding:10px 16px;font:700 12px/1.3 var(--display);letter-spacing:.14em;text-transform:uppercase;animation:ban .35s ease-out}
+@keyframes ban{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 #nogl{inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);pointer-events:auto}
 /* debrief */
 #deb{position:fixed;inset:0;z-index:20;background:rgba(5,8,14,.82);overflow-y:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));backdrop-filter:blur(4px)}
@@ -164,11 +166,42 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 }
 @media (max-width:900px) and (orientation:landscape){#stage{height:clamp(240px,70vh,420px)}}
 @media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
+
+#peek{position:fixed;inset:0;z-index:30}
+.pk-scrim{position:absolute;inset:0;background:rgba(3,6,12,.62);backdrop-filter:blur(2px)}
+.pk-pan{position:absolute;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top,0px);animation:pkin .28s ease-out}
+@keyframes pkin{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+.pk-h{padding:16px max(18px,env(safe-area-inset-right,0px)) 12px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pk-h h3{margin:0;font:800 18px/1.1 var(--display);letter-spacing:-.01em}.pk-h p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.pk-x{background:none;border:1px solid var(--line);color:var(--text);border-radius:3px;width:34px;height:34px;font-size:18px;line-height:1;cursor:pointer}
+.pk-st{display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.pk-st button{flex:1;background:none;border:0;border-bottom:2px solid var(--line);color:var(--muted);font:700 10px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;padding:8px 0;cursor:pointer}
+.pk-st button[aria-current=true]{color:var(--text);border-bottom-color:var(--accent)}.pk-st button.done{border-bottom-color:#4ade80}
+#pkBody{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+#pkBody h4{margin:0;font:700 12px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.pk-f{display:flex;gap:10px;padding:12px max(18px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) 18px;border-top:1px solid var(--line)}
+.pk-f .btn{flex:1}
+.opt{display:block;width:100%;text-align:left;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:12px;color:var(--text);cursor:pointer;font:inherit}
+.opt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt b{display:block;font-size:14px}.opt small{display:block;color:var(--muted);margin-top:3px;font-size:12px;line-height:1.4}
+.vd{display:inline-block;font:800 10px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:3px;margin-left:8px;vertical-align:2px}
+.vd.yes{background:#123524;color:#4ade80}.vd.maybe{background:#3a2d10;color:#fbbf24}.vd.no{background:#3b1519;color:#f87171}
+.cbar{display:flex;height:8px;border-radius:2px;overflow:hidden;margin:8px 0 4px;background:var(--line)}.cbar i{display:block;height:100%}
+.cl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted)}
+.rs{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:3px;font-size:12px}.rs li{padding-left:16px;position:relative;line-height:1.35}
+.rs li:before{position:absolute;left:0;font-weight:800}.rs .ok:before{content:'✓';color:#4ade80}.rs .warn:before{content:'!';color:#fbbf24}.rs .bad:before{content:'✕';color:#f87171}
+.mrow{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center;font-size:12px}.mrow input{width:100%}
+.use{background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px 12px}.use b{font-size:13px}.use p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.use .pk{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.use .pk span{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11px}
+.bnum{font:900 40px/1 var(--display);letter-spacing:-.03em}.presets{display:flex;gap:6px;flex-wrap:wrap}.presets button{flex:1;min-width:64px;padding:9px 4px;background:var(--surface2);border:1px solid var(--line);border-radius:3px;color:var(--text);font:700 12px/1 var(--display);cursor:pointer}.presets button[aria-pressed=true]{border-color:var(--accent)}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}.sum dt{color:var(--muted)}.sum dd{margin:0;font-weight:600}
+@media (max-width:900px){.pk-pan{top:auto;left:0;width:100%;height:90%;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;animation:pkup .28s ease-out}@keyframes pkup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}}
 </style>
-<div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
+<div id="peek" hidden role="dialog" aria-modal="true" aria-labelledby="pkT"><div class="pk-scrim" data-pk="close"></div><aside class="pk-pan"><div class="pk-h"><div><h3 id="pkT">Mission setup</h3><p id="pkS"></p></div><button class="pk-x" data-pk="close" aria-label="Close mission setup">×</button></div><div class="pk-st" id="pkSteps"></div><div id="pkBody"></div><div class="pk-f"><button class="btn" id="pkBack" data-pk="back">Back</button><button class="btn pri" id="pkNext" data-pk="next">Next</button></div></aside></div>
+<div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button id="nv-setup" data-pk="open">Setup</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
 <div id="app" class="hero">
  <section id="stage" aria-label="3D launchpad viewport">
-  <div id="hero"><div class="wtabs" id="wtabs"></div><div class="eyebrow" id="hEye"></div><h2 id="hTitle"></h2><p class="copy" id="hCopy"></p><button class="cta" data-view="build">Begin mission <span aria-hidden="true">→</span></button><div class="strip" id="hStrip"></div></div>
+  <div id="hero"><div class="wtabs" id="wtabs"></div><div class="eyebrow" id="hEye"></div><h2 id="hTitle"></h2><p class="copy" id="hCopy"></p><button class="cta" data-pk="open">Plan mission <span aria-hidden="true">→</span></button><div class="strip" id="hStrip"></div></div>
   <canvas id="gl" aria-label="Interactive 3D rocket. Drag to orbit, scroll to zoom."></canvas>
   <div class="ov" id="hudTL">
    <div class="pill"><b>Status</b><span id="status">Build</span></div>
@@ -177,6 +210,7 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
   <div class="ov" id="hudTR"><span id="hint">Drag to orbit · Scroll to zoom · L to launch</span><div id="speedRow" style="pointer-events:auto;margin-top:8px;display:flex;gap:6px;justify-content:flex-end" hidden></div></div>
   <div class="ov" id="log" aria-hidden="true"></div>
   <div class="ov" id="count" hidden></div>
+  <div class="ov" id="banner" hidden role="status"></div>
   <div class="ov" id="bar"><button class="btn pri" id="launch">Launch</button></div>
   <div class="ov" id="nogl" hidden><p>3D view needs WebGL, which is not available here.<br>The builder, gauges and simulation still work.</p></div>
  </section>
@@ -202,7 +236,8 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 'use strict';
 const G0=9.81, RE=6371000, TARGET_ALT=100000, DT=0.05;
 const WORLDS={earth:{n:'Earth',g:9.81,R:6371000,rho:1.225,H:8500},moon:{n:'Moon',g:1.62,R:1737400,rho:0,H:1000},mars:{n:'Mars',g:3.71,R:3389500,rho:.02,H:11100}};
-const LIM={twr:1.2,budget:1000000,mass:5000};
+const DEFAULT_BUDGET=10000000;
+const LIM={twr:1.2,budget:DEFAULT_BUDGET,mass:5000};
 const MATS={
  'al-standard':{n:'Aluminium',m:1,c:1,t:1,s:1,h:1,note:'Baseline. No surprises.'},
  'al-lithium':{n:'Aluminium-lithium',m:.88,c:1.25,t:1.10,s:1.1,h:1,note:'Lighter, costs more.'},
@@ -223,6 +258,46 @@ const PARTS=[
  {id:'spectrometer',name:'Spectrometer',cat:'payload',dry:150,prop:0,cost:110000,thrust:0,power:-1.5,hours:60,max:1,payload:true},
  {id:'radar',name:'Radar',cat:'payload',dry:300,prop:0,cost:180000,thrust:0,power:-2.5,hours:90,max:1,payload:true}
 ];
+
+const DEF_COMP={al:60,steel:0,ti:20,cf:20,cer:0};
+const CONST={al:{n:'Aluminium',m:1,c:1,t:1,s:1,h:1,col:'#9fb3c8'},steel:{n:'Stainless steel',m:1.35,c:.70,t:.85,s:1.3,h:1.8,col:'#d5dce5'},ti:{n:'Titanium',m:1.05,c:2.10,t:1.50,s:1.6,h:1.7,col:'#7a8496'},cf:{n:'Carbon fibre',m:.70,c:1.80,t:1.70,s:1.4,h:.8,col:'#4a5262'},cer:{n:'Ceramic',m:1.10,c:2.40,t:1.80,s:.8,h:3.0,col:'#e0a06a'}};
+function blend(comp){let tot=0;for(const k in CONST)tot+=Math.max(0,comp[k]||0);if(!tot){comp={al:100};tot=100;}
+ const r={m:0,c:0,t:0,s:0,h:0};let n=0;for(const k in CONST){const w=Math.max(0,comp[k]||0)/tot;for(const p in r)r[p]+=w*CONST[k][p];if(w>=.05)n++;}
+ r.c*=1+.06*Math.max(0,n-1);r.t*=1+.12*Math.max(0,n-1);
+ const parts=Object.keys(CONST).filter(k=>(comp[k]||0)>0).map(k=>[CONST[k].n,Math.round(1000*Math.max(0,comp[k])/tot)/10]);
+ return Object.assign(r,{n:'Custom blend',note:'Your own mix. Joining different metals adds cost and build time.',comp:parts,custom:true});}
+function setCustom(comp){MATS.custom=blend(comp||DEF_COMP);}
+const COMPS={'al-standard':[['Aluminium',97.9],['Magnesium',1.0],['Silicon',.6],['Copper, chromium',.5]],
+ 'al-lithium':[['Aluminium',94.1],['Copper',4.0],['Lithium',1.0],['Magnesium, silver, zirconium',.9]],
+ 'steel':[['Iron',71],['Chromium',18],['Nickel',9],['Manganese, silicon',2]],
+ 'titanium':[['Titanium',90],['Aluminium',6],['Vanadium',4]],
+ 'cfrp':[['Carbon fibre',60],['Epoxy resin',38],['Fillers',2]],
+ 'printed':[['Aluminium',89.6],['Silicon',10],['Magnesium',.4]],
+ 'reclaimed':[['Aluminium',92],['Silicon',3],['Magnesium',2],['Iron',2],['Other',1]]};
+for(const k in COMPS)MATS[k].comp=COMPS[k];
+setCustom(DEF_COMP);
+const USES=[
+ {use:'Primary structure and tanks',pick:['al-lithium','al-standard','steel'],why:'Large surfaces need low mass per dollar. Aluminium-lithium saves mass, steel saves money, plain aluminium is the safe baseline.'},
+ {use:'Side boosters',pick:['steel','al-standard','reclaimed'],why:'Boosters are dropped after burnout, so cheap and tough beats light.'},
+ {use:'Crew and avionics capsule',pick:['titanium','al-lithium'],why:'Small and critical. Strength and heat tolerance matter more than price.'},
+ {use:'Engine section and nozzles',pick:['titanium','steel'],why:'Hot parts need high heat tolerance. Ceramic-rich custom blends also work.'},
+ {use:'Solar wing frames and payload bay',pick:['cfrp','al-lithium'],why:'Stiff and very light, and they see little heat.'},
+ {use:'Prototypes and test articles',pick:['printed','reclaimed'],why:'Fastest and cheapest to build, but not for maximum load.'}
+];
+const WORLD_TIP={earth:'Thick air heats the vehicle at max-Q, so heat tolerance matters. Avoid composites on hot sections.',moon:'No air means no aerodynamic heating. Favour the lightest materials and spend the savings on payload.',mars:'Thin air gives mild heating and low drag. Light, cheap structure works well.'};
+function suitability(key,b){
+ const bb=clone(b);bb.mat=key;const f=runHeadless(bb);const d=f.d,m=MATS[key];const budget=d.gates.budget.limit;const R=[];
+ const heatReq=.6+f.maxQ/40000;
+ R.push(d.gates.struct.pass?{k:'ok',t:'Strength: holds '+d.limit.toFixed(1)+' g, the design needs '+d.loadG.toFixed(1)+' g.'}:{k:'bad',t:'Strength: only holds '+d.limit.toFixed(1)+' g but the design loads '+d.loadG.toFixed(1)+' g.'});
+ R.push(m.h>=heatReq?{k:'ok',t:'Heat: tolerance x'+m.h.toFixed(2)+' covers the x'+heatReq.toFixed(2)+' needed here.'}:(m.h>=heatReq*.85?{k:'warn',t:'Heat: tolerance x'+m.h.toFixed(2)+' is close to the x'+heatReq.toFixed(2)+' needed. Watch hot sections.'}:{k:'bad',t:'Heat: tolerance x'+m.h.toFixed(2)+' is below the x'+heatReq.toFixed(2)+' needed.'}));
+ const share=d.cost/budget;
+ R.push(share<=.6?{k:'ok',t:'Cost: uses '+Math.round(share*100)+'% of the budget.'}:share<=1?{k:'warn',t:'Cost: uses '+Math.round(share*100)+'% of the budget, little headroom.'}:{k:'bad',t:'Cost: '+Math.round(share*100)+'% of the budget. Over budget.'});
+ R.push(d.gates.twr.pass&&d.gates.mass.pass?{k:'ok',t:'Mass: '+Math.round(d.mass)+' kg, thrust-to-weight '+d.twr.toFixed(2)+'.'}:{k:'bad',t:'Mass: '+Math.round(d.mass)+' kg gives thrust-to-weight '+d.twr.toFixed(2)+'. Fails the pad rules.'});
+ R.push(f.outcome==='SUBORBITAL'?{k:'bad',t:'Ascent: runs out of delta-v at '+(f.maxY/1000).toFixed(0)+' km.'}:{k:'ok',t:'Ascent: reaches '+(f.maxY/1000).toFixed(0)+' km.'});
+ R.push(d.days<=30?{k:'ok',t:'Build time: '+d.days.toFixed(0)+' days.'}:d.days<=45?{k:'warn',t:'Build time: '+d.days.toFixed(0)+' days, slow.'}:{k:'bad',t:'Build time: '+d.days.toFixed(0)+' days, too slow.'});
+ const bad=R.filter(x=>x.k==='bad').length,warn=R.filter(x=>x.k==='warn').length;
+ return {verdict:bad?'no':warn?'maybe':'yes',score:100-bad*30-warn*10,reasons:R,d,f};
+}
 const PBY={}; PARTS.forEach(p=>PBY[p.id]=p);
 function matFor(b,p){ if(!p.struct) return MATS['al-standard']; if(p.id==='core-stage'&&b.mat==='printed') return MATS['al-standard']; return MATS[b.mat]; }
 function count(b,id){ const p=PBY[id]; return p.fixed?1:(b.counts[id]||0); }
@@ -239,10 +314,10 @@ function evalBuild(b){
  const W=WORLDS[b.world||'earth'];const twr=thrust/(mass*W.g);const loadG=thrust/(mass*G0);
  const days=hours*(1+.04*(types-1))/(b.crew*8);
  const limit=3*MATS[b.mat].s;
- const E=1e-9;
+ const E=1e-9; const budget=b.budget||DEFAULT_BUDGET;
  const gates={
   twr:{id:'TWR',pass:twr>=LIM.twr-E,value:twr,limit:LIM.twr},
-  budget:{id:'BUDGET',pass:cost<=LIM.budget+E,value:cost,limit:LIM.budget},
+  budget:{id:'BUDGET',pass:cost<=budget+E,value:cost,limit:budget},
   mass:{id:'MASS',pass:mass<=LIM.mass+E,value:mass,limit:LIM.mass},
   power:{id:'POWER',pass:power>E,value:power,limit:0},
   struct:{id:'STRUCT',pass:loadG<=limit+E,value:loadG,limit}
@@ -270,7 +345,7 @@ function stepFlight(f){
  if(f.phase==='shake'){ f.t+=dt; if(f.t>2.8){ f.phase='crash'; f.outcome='PAD_CRASH'; ev(f,'Thrust below weight margin. Vehicle lost on the pad.'); } return; }
  let F=0;
  if(f.core.prop>0){ const dm=Math.min(f.core.prop,f.core.thrust/(f.core.isp*G0)*dt); F+=f.core.thrust*dm/(f.core.thrust/(f.core.isp*G0)*dt); f.core.prop-=dm; }
- for(const b of f.boosters){ if(b.attached&&b.prop>0){ const full=b.thrust/(b.isp*G0)*dt; const dm=Math.min(b.prop,full); F+=b.thrust*dm/full; b.prop-=dm; if(b.prop<=0){ b.attached=false; f.jett.push(b); ev(f,'Booster burnout and separation'); } } }
+ for(const b of f.boosters){ if(b.attached&&b.prop>0){ const full=b.thrust/(b.isp*G0)*dt; const dm=Math.min(b.prop,full); F+=b.thrust*dm/full; b.prop-=dm; if(b.prop<=0){ b.attached=false; f.jett.push(b); ev(f,'Booster separation at '+(f.y/1000).toFixed(1)+' km'); } } }
  f.thrusting=F>0;
  const m=fmass(f);
  const W=f.W;const rho=W.rho*Math.exp(-f.y/W.H);
@@ -283,8 +358,10 @@ function stepFlight(f){
  if(!f.liftoff&&f.y>5){f.liftoff=true; ev(f,'Liftoff');}
  if(!f.strc&&f.y>150){f.strc=true; if(!f.d.gates.struct.pass){ f.phase='breakup'; f.outcome='BREAKUP'; ev(f,'Structure failed under '+f.d.loadG.toFixed(2)+' g load'); return; } }
  if(q>f.maxQ) f.maxQ=q; else if(!f.mq&&f.maxQ>1000&&q<f.maxQ*.97){ f.mq=true; ev(f,'Max-Q passed ('+(f.maxQ/1000).toFixed(1)+' kPa)'); }
- if(!f.meco&&f.core.prop<=0){ f.meco=true; ev(f,'Core engine cutoff at '+(f.y/1000).toFixed(1)+' km'); }
- if(f.meco&&F===0&&(f.v<=0||f.y>=TARGET_ALT)){
+ if(!f.meco&&f.core.prop<=0){ f.meco=true; ev(f,'Core engine cutoff at '+(f.y/1000).toFixed(1)+' km'); f.mecoT=f.t; }
+ if(f.meco&&!f.sep&&f.t>=f.mecoT+.5){ f.sep=true; f.coreDrop=true; f.core.dry*=.45; ev(f,'Stage separation: engine section jettisoned at '+(f.y/1000).toFixed(1)+' km'); }
+ if(!f.fair&&f.y>=70000){ f.fair=true; f.fairDrop=true; ev(f,'Fairing jettison at 70 km'); }
+ if(f.meco&&f.sep&&F===0&&(f.v<=0||f.y>=TARGET_ALT)){
   if(f.v>0) f.maxY=Math.max(f.maxY,f.y+f.v*f.v/(2*g));
   f.phase='done';
   if(f.maxY>=TARGET_ALT) f.outcome=f.d.power>1e-9?'ORBIT':'POWER'; else f.outcome='SUBORBITAL';
@@ -293,12 +370,12 @@ function stepFlight(f){
  if(f.t>3000){ f.phase='done'; f.outcome='SUBORBITAL'; }
 }
 function runHeadless(b){ const f=newFlight(b); let n=0; while(f.phase==='burn'&&n++<80000) stepFlight(f); if(f.phase==='shake'){ f.outcome='PAD_CRASH'; } return f; }
-function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew,world:b.world||'earth'}; }
+function clone(b){ return {counts:Object.assign({},b.counts),mat:b.mat,crew:b.crew,world:b.world||'earth',budget:b.budget||DEFAULT_BUDGET,comp:Object.assign({},b.comp||DEF_COMP)}; }
 function boosterTotal(b){ return (b.counts['booster-side']||0)+(b.counts['booster-heavy']||0); }
 function canAdd(b,id){ const p=PBY[id]; if(p.fixed) return false; if((b.counts[id]||0)>=p.max) return false; if(p.booster&&boosterTotal(b)>=2) return false; return true; }
 function efficiency(d,f){
  const mf=Math.min(1,(d.payload/d.mass)/.2);
- const ce=Math.max(0,1-d.cost/LIM.budget);
+ const ce=Math.max(0,1-d.cost/d.gates.budget.limit);
  const te=Math.max(0,1-d.days/45);
  const tw=d.loadG>=1.2&&d.loadG<=2.2?1:Math.max(0,1-Math.abs(d.loadG-1.7)/1.5);
  const pu=d.power>0?1:0;
@@ -336,7 +413,7 @@ const EXAMPLES={
  B:{name:'B · Clean orbit',counts:{camera:1,'solar-wing':1,'booster-side':1},mat:'al-standard',crew:4},
  C:{name:'C · Heavy hauler',counts:{'booster-heavy':2,radar:1,spectrometer:1,'solar-wing':1,rtg:1},mat:'al-standard',crew:4}
 };
-if(typeof module!=='undefined') module.exports={WORLDS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
+if(typeof module!=='undefined') module.exports={suitability,blend,setCustom,USES,WORLD_TIP,CONST,DEF_COMP,DEFAULT_BUDGET,WORLDS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
 
 </script>
 <script>
@@ -347,13 +424,14 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const money=v=>v>=1e6?'$'+(v/1e6).toFixed(2)+'M':'$'+Math.round(v/1e3)+'k';
 const tfmt=t=>{t=Math.max(0,t|0);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');};
-const START={counts:{camera:1,'solar-wing':1},mat:'al-standard',crew:4,world:'earth'};
+const START={counts:{camera:1,'solar-wing':1},mat:'al-standard',crew:4,world:'earth',budget:DEFAULT_BUDGET,comp:Object.assign({},DEF_COMP)};
+const mission={obj:'science'};
 let view='hero';
-const fresh=()=>{const n=clone(START);n.world=build.world;return n;};
+const fresh=()=>{const n=clone(START);n.world=build.world;n.budget=build.budget;n.comp=Object.assign({},build.comp);return n;};
 let build=clone(START), hist=[], redo=[], tab='propulsion', lastRun=null;
 let mode='build', fl=null, simAcc=0, speed=6, paused=false, cdT=0, visAlt=0, samples=[], lastSample=0, debTimer=null, prop0=1;
 const cache=new Map();
-function key(b){return JSON.stringify([Object.keys(b.counts).sort().map(k=>[k,b.counts[k]]),b.mat,b.crew,b.world||'earth']);}
+function key(b){return JSON.stringify([Object.keys(b.counts).sort().map(k=>[k,b.counts[k]]),b.mat,b.crew,b.world||'earth',b.budget,b.mat==='custom'?b.comp:0]);}
 function sim(b){const k=key(b);if(!cache.has(k))cache.set(k,runHeadless(b));return cache.get(k);}
 function announce(m){$('#live').textContent=m;}
 
@@ -391,15 +469,19 @@ function buildRocket(b){
  const bellM=M(0x3a3f4a,{metalness:.9,roughness:.35,side:THREE.DoubleSide});
  const tag=(id,grp)=>{(o.parts[id]=o.parts[id]||[]).push(grp);g.add(grp);return grp;};
  const core=tag('core-stage',new THREE.Group());
- core.add(mesh(lathe([[.5,.7],[.55,1.1],[.56,2.2],[.56,4.4],[.52,5.1]],48),sm,0,0,0));
- for(let i=0;i<8;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;core.add(t);}
- [1.4,4.55].forEach(y=>{const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,y,0);t.rotation.x=Math.PI/2;core.add(t);});
+ core.add(mesh(lathe([[.56,2.2],[.56,4.4],[.52,5.1]],48),sm,0,0,0));
+ for(let i=3;i<8;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;core.add(t);}
+ {const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,4.55,0);t.rotation.x=Math.PI/2;core.add(t);}
  core.add(mesh(new THREE.CylinderGeometry(.56,.56,.32,48),dark,0,4.78,0));
  const dec=new THREE.Mesh(new THREE.CylinderGeometry(.567,.567,3.0,32,1,true,-.6,1.2),new THREE.MeshBasicMaterial({map:decalTex(),transparent:true,depthWrite:false}));dec.position.y=2.75;core.add(dec);
- for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;core.add(mesh(new THREE.CylinderGeometry(.19,.19,.05,16),dark,Math.cos(a)*.26,.7,Math.sin(a)*.26));const bl=mesh(lathe(bellPts(.07,.17,.55),20),bellM,Math.cos(a)*.26,.15,Math.sin(a)*.26);core.add(bl);}
- core.add(mesh(lathe(bellPts(.08,.19,.6),20),bellM,0,.1,0));
  for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const f=mesh(new THREE.BoxGeometry(.34,.03,.26),dark,Math.cos(a)*.7,4.5,Math.sin(a)*.7);f.rotation.y=-a;core.add(f);}
- for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;const f=mesh(new THREE.BoxGeometry(.05,.95,.55),sm,Math.cos(a)*.78,1.0,Math.sin(a)*.78);f.rotation.y=-a;core.add(f);}
+ const low=new THREE.Group();core.add(low);o.low=low;
+ low.add(mesh(lathe([[.5,.7],[.55,1.1],[.56,2.2]],48),sm,0,0,0));
+ for(let i=0;i<3;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;low.add(t);}
+ {const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,1.4,0);t.rotation.x=Math.PI/2;low.add(t);}
+ for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;low.add(mesh(new THREE.CylinderGeometry(.19,.19,.05,16),dark,Math.cos(a)*.26,.7,Math.sin(a)*.26));low.add(mesh(lathe(bellPts(.07,.17,.55),20),bellM,Math.cos(a)*.26,.15,Math.sin(a)*.26));}
+ low.add(mesh(lathe(bellPts(.08,.19,.6),20),bellM,0,.1,0));
+ for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;const f=mesh(new THREE.BoxGeometry(.05,.95,.55),sm,Math.cos(a)*.78,1.0,Math.sin(a)*.78);f.rotation.y=-a;low.add(f);}
  const cap=tag('capsule',new THREE.Group());
  const ogp=ogive(.52,1.95,16).map(p=>new THREE.Vector2(p[0],p[1])),fm=white.clone();fm.side=THREE.DoubleSide;
  const fA=new THREE.Group(),fB=new THREE.Group();fA.position.y=fB.position.y=5.1;
@@ -640,7 +722,7 @@ function rmPart(id){if(mode!=='build'||!(build.counts[id]>0))return;const nb=clo
 function setMat(m){if(mode!=='build'||m===build.mat)return;const nb=clone(build);nb.mat=m;blip(420,.1,'sine',.04);setBuild(nb,null,'Structure switched to '+MATS[m].n);}
 let crewPending=false;
 function setCrew(n){if(mode!=='build'||n===build.crew)return;if(!crewPending){hist.push(clone(build));redo.length=0;crewPending=true;}build.crew=n;renderGauges();renderExamples();}
-function loadBuild(b,label){if(mode!=='build')return;const w=build.world;hist.push(clone(build));redo.length=0;build=clone(b);build.world=w;onChange(null,label);}
+function loadBuild(b,label){if(mode!=='build')return;const w=build.world;hist.push(clone(build));redo.length=0;const bu=build.budget,cp=build.comp;build=clone(b);build.world=w;build.budget=bu;build.comp=cp;onChange(null,label);}
 
 /* ---------- UI render ---------- */
 function gate(id,ok,label,val,sub,frac,mark,stat){return '<div class="g '+(ok===null?'neutral':ok?'':'bad')+'"><div class="gl">'+label+'</div><div class="gv">'+val+'</div><div class="bar"><i style="width:'+clamp(frac*100,0,100)+'%"></i>'+(mark!=null?'<b style="left:'+mark*100+'%"></b>':'')+'</div><div class="gs"><span class="chip">'+(ok===null?'·':ok?'✓':'✕')+' '+stat+'</span><span>'+sub+'</span></div></div>';}
@@ -650,7 +732,7 @@ function renderGauges(){
  const eff=efficiency(d);
  const rows=[
   gate('twr',G.twr.pass&&G.struct.pass,'Thrust / weight',d.twr.toFixed(2),'min 1.20 · load '+d.loadG.toFixed(1)+' g of '+d.limit.toFixed(1),d.twr/3,1.2/3,G.twr.pass?(G.struct.pass?'OK':'TOO HIGH'):'TOO LOW'),
-  gate('bud',G.budget.pass,'Budget',money(d.cost),'ceiling $1.00M',d.cost/1.2e6,1/1.2,G.budget.pass?'OK':'OVER'),
+  gate('bud',G.budget.pass,'Budget',money(d.cost),'ceiling '+money(G.budget.limit),d.cost/(G.budget.limit*1.2),1/1.2,G.budget.pass?'OK':'OVER'),
   gate('mass',G.mass.pass,'Mass',Math.round(d.mass).toLocaleString('en-US')+' kg','limit 5,000 kg',d.mass/6000,5000/6000,G.mass.pass?'OK':'OVER'),
   gate('pow',G.power.pass,'Net power',(d.power>=0?'+':'')+d.power.toFixed(1)+' kW','gen '+gen.toFixed(1)+' · draw '+draw.toFixed(1),gen>0?draw/gen:1,null,G.power.pass?'SURPLUS':'DEFICIT'),
   gate('days',null,'Build time',d.days.toFixed(1)+' days','crew '+build.crew+' · '+Math.round(d.hours)+' work hours',d.days/60,null,'INFO'),
@@ -687,7 +769,7 @@ function setLocked(l){document.querySelectorAll('#bay button,#bay input').forEac
 function launch(){
  if(mode!=='build'||view!=='build')return;closeDeb();actx();
  fl=newFlight(build);prop0=fl.core.prop+fl.boosters.reduce((s,b)=>s+b.prop,0);samples=[];lastSample=-1;simAcc=0;paused=false;visAlt=0;exploded=false;
- rebuildRocket();debris.forEach(d=>scene&&scene.remove(d.g));debris.length=0;
+ debris.forEach(d=>scene&&scene.remove(d.g));debris.length=0;rebuildRocket();
  mode='countdown';cdT=3.2;setLocked(true);$('#launch').hidden=true;$('#log').innerHTML='';
  $('#tele').hidden=false;$('#speedRow').hidden=false;renderSpeed();$('#hint').textContent='Drag to orbit · Scroll to zoom';setStatus('Countdown');
  cam.dist=17;cam.pol=1.3;announce('Launch sequence started');startRumble();
@@ -709,7 +791,8 @@ function endFlight(){
  if(mode==='ended')return;mode='ended';samples.push({t:fl.t,alt:fl.y/1000,v:fl.v});stopRumble();$('#speedRow').hidden=true;
  const o=fl.outcome;setStatus(o==='ORBIT'?'Orbit reached':o==='PAD_CRASH'?'Lost on pad':o==='BREAKUP'?'Structural failure':o==='POWER'?'Power failure':'Suborbital');
  if(o==='ORBIT'){blip(660,.2,'sine',.05);setTimeout(()=>blip(880,.3,'sine',.05),180);}
- const wait=o==='ORBIT'||o==='POWER'?2600:1500;
+ if((o==='ORBIT'||o==='POWER')&&build.counts['solar-wing']){logEv('Solar arrays deployed','ok',fl.t);}
+ const wait=o==='ORBIT'||o==='POWER'?3600:1500;
  debTimer=setTimeout(showDeb,wait);
 }
 
@@ -717,7 +800,7 @@ function endFlight(){
 function gateText(k,g,d,b){
  const m=MATS[b.mat].n;
  if(k==='twr')return g.pass?'Thrust is '+g.value.toFixed(2)+'× the rocket’s weight. The minimum is 1.20.':'Thrust is only '+g.value.toFixed(2)+'× the rocket’s weight. It must be at least 1.20 to leave the pad.';
- if(k==='budget')return g.pass?'Hardware and crew cost '+money(g.value)+', under the $1.00M ceiling.':'Hardware and crew cost '+money(g.value)+', which is '+money(g.value-g.limit)+' over the $1.00M ceiling.';
+ if(k==='budget')return g.pass?'Hardware and crew cost '+money(g.value)+', under the '+money(g.limit)+' ceiling.':'Hardware and crew cost '+money(g.value)+', which is '+money(g.value-g.limit)+' over the '+money(g.limit)+' ceiling.';
  if(k==='mass')return g.pass?'Launch mass is '+Math.round(g.value)+' kg, within the 5,000 kg pad limit.':'Launch mass is '+Math.round(g.value)+' kg, which is '+Math.round(g.value-g.limit)+' kg over the pad limit.';
  if(k==='power')return g.pass?'Generation beats consumption by '+g.value.toFixed(1)+' kW.':'Consumption exceeds generation by '+(-g.value).toFixed(1)+' kW. Payloads go dark in orbit.';
  return g.pass?'Liftoff load is '+g.value.toFixed(2)+' g. '+m+' holds up to '+g.limit.toFixed(1)+' g.':'Liftoff load is '+g.value.toFixed(2)+' g but '+m+' only holds '+g.limit.toFixed(1)+' g. The structure breaks on ascent.';
@@ -727,7 +810,7 @@ function chart(label,unit,key,col){
  const W=320,H=130,l=38,b=20,t=8,r=10;const S=samples;const mt=Math.max(1,S[S.length-1].t);let mv=1;S.forEach(s=>{mv=Math.max(mv,s[key]);});
  const X=v=>l+(W-l-r)*v/mt,Y=v=>H-b-(H-b-t)*Math.max(0,v)/mv;
  const pts=S.map(s=>X(s.t).toFixed(1)+','+Y(s[key]).toFixed(1)).join(' ');const e=S[S.length-1];
- const evs=fl.events.filter(x=>/separation|cutoff/.test(x.s)).map(x=>'<line class="ev" x1="'+X(x.t)+'" x2="'+X(x.t)+'" y1="'+t+'" y2="'+(H-b)+'"/>').join('');
+ const evs=fl.events.filter(x=>/separation|cutoff|jettison/.test(x.s)).map(x=>'<line class="ev" x1="'+X(x.t)+'" x2="'+X(x.t)+'" y1="'+t+'" y2="'+(H-b)+'"/>').join('');
  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label+' over time, peak '+mv.toFixed(key==='alt'?0:0)+' '+unit+'"><line class="ax" x1="'+l+'" x2="'+l+'" y1="'+t+'" y2="'+(H-b)+'"/><line class="ax" x1="'+l+'" x2="'+(W-r)+'" y1="'+(H-b)+'" y2="'+(H-b)+'"/>'+evs+'<polyline class="ln" points="'+pts+'"/><circle cx="'+X(e.t)+'" cy="'+Y(e[key])+'" r="3"/><text x="4" y="'+(t+8)+'">'+Math.round(mv)+'</text><text x="4" y="'+(H-b)+'">0</text><text x="'+l+'" y="'+(H-5)+'">0 s</text><text x="'+(W-r)+'" y="'+(H-5)+'" text-anchor="end">'+Math.round(mt)+' s</text><text x="'+(l+6)+'" y="'+(t+8)+'">'+label+' ('+unit+')</text></svg>';
 }
 function showDeb(){
@@ -780,6 +863,11 @@ function setView(v){if(mode!=='build'&&v==='hero')return;view=v;$('#app').classL
 document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;par.tx=e.clientX/innerWidth-.5;par.ty=e.clientY/innerHeight-.5;});
 document.addEventListener('click',e=>{
  const t=e.target.closest('button,[data-tab]');if(!t)return;
+ if(t.dataset.pk){pkAct(t.dataset.pk);return;}
+ if(t.dataset.pkw){build.world=build.world;setWorld(t.dataset.pkw);renderPeek();return;}
+ if(t.dataset.pkobj){mission.obj=t.dataset.pkobj;renderPeek();return;}
+ if(t.dataset.pkb){setBudget(+t.dataset.pkb);return;}
+ if(t.dataset.pkm){setMat(t.dataset.pkm);cache.clear();renderPeek();return;}
  if(t.dataset.view){setView(t.dataset.view);return;}
  if(t.dataset.world){setWorld(t.dataset.world);return;}
  if(t.dataset.tab){tab=t.dataset.tab;renderTabs();renderCatalog();return;}
@@ -810,6 +898,54 @@ document.addEventListener('keydown',e=>{if(e.target.matches&&e.target.matches('i
  else if(k==='r'&&mode==='build'){setBuild(fresh(),null,'Reset to starter build');}
  else if(k==='z'&&mode==='build'){if(e.shiftKey){$('#redo').click();}else{$('#undo').click();}}
 });
+
+
+/* ---------- mission setup side peek ---------- */
+const OBJ={science:['Science mission','Carry instruments and a camera. Needs steady power and a light structure.'],cargo:['Cargo delivery','Lift as much payload as possible. Favours cheap strong materials.'],crew:['Crew demo','Crew capsule on board. Favours strength and heat tolerance.'],tech:['Technology demo','Prove a new design cheaply. Favours fast builds and low cost.']};
+const OBJ_USE={science:['cfrp','al-lithium'],cargo:['steel','al-standard'],crew:['titanium','al-lithium'],tech:['printed','reclaimed']};
+const MCOL={'Aluminium':'#9fb3c8','Iron':'#d5dce5','Chromium':'#7fb6c9','Nickel':'#b8c2a6','Titanium':'#7a8496','Carbon fibre':'#4a5262','Epoxy resin':'#c28f5a','Copper':'#d98b5f','Lithium':'#c084fc','Silicon':'#e0c870','Vanadium':'#86efac','Ceramic':'#e0a06a','Stainless steel':'#d5dce5','Magnesium':'#fca5a5'};
+const colOf=n=>MCOL[n]||'#64748b';
+const STEPS=['Destination','Budget','Materials','Review'];let pkStep=0;
+function setBudget(v){build.budget=clamp(Math.round(v/1e5)*1e5,1e6,50e6);cache.clear();renderPeek();renderAll();}
+function pkAct(a){const P=$('#peek');
+ if(a==='open'){pkStep=0;P.hidden=false;renderPeek();setTimeout(()=>{const x=$('.pk-x');if(x)x.focus();},30);return;}
+ if(a==='close'){P.hidden=true;return;}
+ if(a==='back'){pkStep=Math.max(0,pkStep-1);renderPeek();return;}
+ if(a==='next'){if(pkStep<STEPS.length-1){pkStep++;renderPeek();}else{P.hidden=true;setView('build');renderAll();logEv('Mission set: '+OBJ[mission.obj][0]+', '+WN[build.world]+', budget '+money(build.budget),'');}return;}
+ if(typeof a==='string'&&a.indexOf('step')===0){pkStep=+a.slice(4);renderPeek();}}
+function compBar(c){return '<div class="cbar" role="img" aria-label="Composition">'+c.map(x=>'<i style="width:'+x[1]+'%;background:'+colOf(x[0])+'"></i>').join('')+'</div><div class="cl">'+c.map(x=>'<span><b style="color:'+colOf(x[0])+'">●</b> '+x[0]+' '+x[1]+'%</span>').join('')+'</div>';}
+const VT={yes:'Suits',maybe:'Maybe',no:'Poor fit'};
+function renderPeek(){if($('#peek').hidden)return;
+ $('#pkSteps').innerHTML=STEPS.map((s,i)=>'<button data-pk="step'+i+'" aria-current="'+(i===pkStep)+'" class="'+(i<pkStep?'done':'')+'">'+(i+1)+' '+s+'</button>').join('');
+ $('#pkS').textContent='Step '+(pkStep+1)+' of '+STEPS.length+'. Everything here updates your build checks live.';
+ $('#pkBack').disabled=pkStep===0;$('#pkNext').textContent=pkStep===STEPS.length-1?'Start building':'Next';
+ let h='';const B=$('#pkBody'),keep=B.scrollTop;
+ if(pkStep===0){
+  h+='<h4>Destination</h4>'+Object.keys(COPY).map(k=>'<button class="opt" data-pkw="'+k+'" aria-pressed="'+(k===build.world)+'"><b>'+WN[k]+'</b><small>'+WORLD_TIP[k]+'</small></button>').join('');
+  h+='<h4>Mission objective</h4>'+Object.keys(OBJ).map(k=>'<button class="opt" data-pkobj="'+k+'" aria-pressed="'+(k===mission.obj)+'"><b>'+OBJ[k][0]+'</b><small>'+OBJ[k][1]+'</small></button>').join('');}
+ else if(pkStep===1){
+  const d=evalBuild(build);
+  h+='<h4>Budget ceiling</h4><div class="bnum">'+money(build.budget)+'</div><input id="bud" type="range" min="1000000" max="50000000" step="500000" value="'+build.budget+'" aria-label="Budget"><div class="presets">'+[1e6,5e6,10e6,25e6,50e6].map(v=>'<button data-pkb="'+v+'" aria-pressed="'+(v===build.budget)+'">'+money(v)+(v===DEFAULT_BUDGET?' default':'')+'</button>').join('')+'</div>'
+   +'<div class="use"><b>Current build costs '+money(d.cost)+'</b><p>'+Math.round(d.cost/build.budget*100)+'% of the budget used. Crew above 4 people and exotic materials add cost. Mixing materials adds cost and build time.</p></div>';}
+ else if(pkStep===2){
+  const sel=build.mat;
+  h+='<h4>Materials for '+WN[build.world]+'</h4><p class="note">Tap a material to use it. Each card tests it against your current design, destination and budget.</p>';
+  h+=Object.keys(MATS).map(k=>{const m=MATS[k],r=suitability(k,build);const nm=m.n||k;
+   return '<button class="opt" data-pkm="'+k+'" aria-pressed="'+(k===sel)+'"><b>'+nm+'<span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></b><small>'+(m.note||'')+'</small>'+compBar(m.comp||[])+'<div class="cl"><span>Mass x'+m.m.toFixed(2)+'</span><span>Cost x'+m.c.toFixed(2)+'</span><span>Time x'+m.t.toFixed(2)+'</span><span>Strength x'+m.s.toFixed(2)+'</span><span>Heat x'+m.h.toFixed(2)+'</span></div><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></button>';}).join('');
+  h+='<h4>Custom blend</h4><p class="note">Mix your own alloy. Percentages are normalised to 100.</p>'+Object.keys(CONST).map(k=>'<div class="mrow"><label for="cm-'+k+'">'+CONST[k].n+'</label><input id="cm-'+k+'" data-cm="'+k+'" type="range" min="0" max="100" step="5" value="'+(build.comp[k]||0)+'"><span id="cv-'+k+'">'+(build.comp[k]||0)+'</span></div>').join('');
+  h+='<h4>What to use where</h4>'+USES.map(u=>'<div class="use"><b>'+u.use+'</b><p>'+u.why+'</p><div class="pk">'+u.pick.map(p=>'<span>'+(MATS[p].n||p)+'</span>').join('')+'</div></div>').join('');
+  h+='<div class="use"><b>For a '+OBJ[mission.obj][0].toLowerCase()+'</b><p>Best starting picks: '+OBJ_USE[mission.obj].map(p=>MATS[p].n||p).join(' or ')+'.</p></div>';}
+ else{
+  const d=evalBuild(build),r=suitability(build.mat,build),G=d.gates;
+  h+='<h4>Review</h4><dl class="sum"><dt>Destination</dt><dd>'+WN[build.world]+'</dd><dt>Objective</dt><dd>'+OBJ[mission.obj][0]+'</dd><dt>Budget</dt><dd>'+money(build.budget)+'</dd><dt>Material</dt><dd>'+(MATS[build.mat].n||build.mat)+' <span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></dd></dl>'
+   +'<div class="use"><b>Material check</b><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></div>'
+   +'<div class="use"><b>Starter build</b><p>'+money(d.cost)+', '+Math.round(d.mass)+' kg, '+d.days.toFixed(0)+' days. Add engines and tanks in the builder to pass every launch check.</p></div>';}
+ B.innerHTML=h;B.scrollTop=keep;}
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='bud'){build.budget=clamp(+t.value,1e6,50e6);t.previousElementSibling.textContent=money(build.budget);cache.clear();renderAll();return;}
+ if(t.dataset&&t.dataset.cm){build.comp[t.dataset.cm]=+t.value;$('#cv-'+t.dataset.cm).textContent=t.value;setCustom(build.comp);cache.clear();if(build.mat==='custom')renderAll();}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&(t.dataset.cm||t.id==='bud'))renderPeek();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#peek').hidden){$('#peek').hidden=true;e.stopPropagation();}},true);
 
 /* ---------- main loop ---------- */
 let last=performance.now();

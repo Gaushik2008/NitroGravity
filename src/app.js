@@ -5,13 +5,14 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const money=v=>v>=1e6?'$'+(v/1e6).toFixed(2)+'M':'$'+Math.round(v/1e3)+'k';
 const tfmt=t=>{t=Math.max(0,t|0);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');};
-const START={counts:{camera:1,'solar-wing':1},mat:'al-standard',crew:4,world:'earth'};
+const START={counts:{camera:1,'solar-wing':1},mat:'al-standard',crew:4,world:'earth',budget:DEFAULT_BUDGET,comp:Object.assign({},DEF_COMP)};
+const mission={obj:'science'};
 let view='hero';
-const fresh=()=>{const n=clone(START);n.world=build.world;return n;};
+const fresh=()=>{const n=clone(START);n.world=build.world;n.budget=build.budget;n.comp=Object.assign({},build.comp);return n;};
 let build=clone(START), hist=[], redo=[], tab='propulsion', lastRun=null;
 let mode='build', fl=null, simAcc=0, speed=6, paused=false, cdT=0, visAlt=0, samples=[], lastSample=0, debTimer=null, prop0=1;
 const cache=new Map();
-function key(b){return JSON.stringify([Object.keys(b.counts).sort().map(k=>[k,b.counts[k]]),b.mat,b.crew,b.world||'earth']);}
+function key(b){return JSON.stringify([Object.keys(b.counts).sort().map(k=>[k,b.counts[k]]),b.mat,b.crew,b.world||'earth',b.budget,b.mat==='custom'?b.comp:0]);}
 function sim(b){const k=key(b);if(!cache.has(k))cache.set(k,runHeadless(b));return cache.get(k);}
 function announce(m){$('#live').textContent=m;}
 
@@ -49,15 +50,19 @@ function buildRocket(b){
  const bellM=M(0x3a3f4a,{metalness:.9,roughness:.35,side:THREE.DoubleSide});
  const tag=(id,grp)=>{(o.parts[id]=o.parts[id]||[]).push(grp);g.add(grp);return grp;};
  const core=tag('core-stage',new THREE.Group());
- core.add(mesh(lathe([[.5,.7],[.55,1.1],[.56,2.2],[.56,4.4],[.52,5.1]],48),sm,0,0,0));
- for(let i=0;i<8;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;core.add(t);}
- [1.4,4.55].forEach(y=>{const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,y,0);t.rotation.x=Math.PI/2;core.add(t);});
+ core.add(mesh(lathe([[.56,2.2],[.56,4.4],[.52,5.1]],48),sm,0,0,0));
+ for(let i=3;i<8;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;core.add(t);}
+ {const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,4.55,0);t.rotation.x=Math.PI/2;core.add(t);}
  core.add(mesh(new THREE.CylinderGeometry(.56,.56,.32,48),dark,0,4.78,0));
  const dec=new THREE.Mesh(new THREE.CylinderGeometry(.567,.567,3.0,32,1,true,-.6,1.2),new THREE.MeshBasicMaterial({map:decalTex(),transparent:true,depthWrite:false}));dec.position.y=2.75;core.add(dec);
- for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;core.add(mesh(new THREE.CylinderGeometry(.19,.19,.05,16),dark,Math.cos(a)*.26,.7,Math.sin(a)*.26));const bl=mesh(lathe(bellPts(.07,.17,.55),20),bellM,Math.cos(a)*.26,.15,Math.sin(a)*.26);core.add(bl);}
- core.add(mesh(lathe(bellPts(.08,.19,.6),20),bellM,0,.1,0));
  for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const f=mesh(new THREE.BoxGeometry(.34,.03,.26),dark,Math.cos(a)*.7,4.5,Math.sin(a)*.7);f.rotation.y=-a;core.add(f);}
- for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;const f=mesh(new THREE.BoxGeometry(.05,.95,.55),sm,Math.cos(a)*.78,1.0,Math.sin(a)*.78);f.rotation.y=-a;core.add(f);}
+ const low=new THREE.Group();core.add(low);o.low=low;
+ low.add(mesh(lathe([[.5,.7],[.55,1.1],[.56,2.2]],48),sm,0,0,0));
+ for(let i=0;i<3;i++){const t=mesh(new THREE.TorusGeometry(.562,.008,6,48),dark,0,1.15+i*.5,0);t.rotation.x=Math.PI/2;low.add(t);}
+ {const t=mesh(new THREE.TorusGeometry(.568,.03,8,48),accent,0,1.4,0);t.rotation.x=Math.PI/2;low.add(t);}
+ for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;low.add(mesh(new THREE.CylinderGeometry(.19,.19,.05,16),dark,Math.cos(a)*.26,.7,Math.sin(a)*.26));low.add(mesh(lathe(bellPts(.07,.17,.55),20),bellM,Math.cos(a)*.26,.15,Math.sin(a)*.26));}
+ low.add(mesh(lathe(bellPts(.08,.19,.6),20),bellM,0,.1,0));
+ for(let k=0;k<3;k++){const a=k*Math.PI*2/3+Math.PI/6;const f=mesh(new THREE.BoxGeometry(.05,.95,.55),sm,Math.cos(a)*.78,1.0,Math.sin(a)*.78);f.rotation.y=-a;low.add(f);}
  const cap=tag('capsule',new THREE.Group());
  const ogp=ogive(.52,1.95,16).map(p=>new THREE.Vector2(p[0],p[1])),fm=white.clone();fm.side=THREE.DoubleSide;
  const fA=new THREE.Group(),fB=new THREE.Group();fA.position.y=fB.position.y=5.1;
@@ -298,7 +303,7 @@ function rmPart(id){if(mode!=='build'||!(build.counts[id]>0))return;const nb=clo
 function setMat(m){if(mode!=='build'||m===build.mat)return;const nb=clone(build);nb.mat=m;blip(420,.1,'sine',.04);setBuild(nb,null,'Structure switched to '+MATS[m].n);}
 let crewPending=false;
 function setCrew(n){if(mode!=='build'||n===build.crew)return;if(!crewPending){hist.push(clone(build));redo.length=0;crewPending=true;}build.crew=n;renderGauges();renderExamples();}
-function loadBuild(b,label){if(mode!=='build')return;const w=build.world;hist.push(clone(build));redo.length=0;build=clone(b);build.world=w;onChange(null,label);}
+function loadBuild(b,label){if(mode!=='build')return;const w=build.world;hist.push(clone(build));redo.length=0;const bu=build.budget,cp=build.comp;build=clone(b);build.world=w;build.budget=bu;build.comp=cp;onChange(null,label);}
 
 /* ---------- UI render ---------- */
 function gate(id,ok,label,val,sub,frac,mark,stat){return '<div class="g '+(ok===null?'neutral':ok?'':'bad')+'"><div class="gl">'+label+'</div><div class="gv">'+val+'</div><div class="bar"><i style="width:'+clamp(frac*100,0,100)+'%"></i>'+(mark!=null?'<b style="left:'+mark*100+'%"></b>':'')+'</div><div class="gs"><span class="chip">'+(ok===null?'·':ok?'✓':'✕')+' '+stat+'</span><span>'+sub+'</span></div></div>';}
@@ -308,7 +313,7 @@ function renderGauges(){
  const eff=efficiency(d);
  const rows=[
   gate('twr',G.twr.pass&&G.struct.pass,'Thrust / weight',d.twr.toFixed(2),'min 1.20 · load '+d.loadG.toFixed(1)+' g of '+d.limit.toFixed(1),d.twr/3,1.2/3,G.twr.pass?(G.struct.pass?'OK':'TOO HIGH'):'TOO LOW'),
-  gate('bud',G.budget.pass,'Budget',money(d.cost),'ceiling $1.00M',d.cost/1.2e6,1/1.2,G.budget.pass?'OK':'OVER'),
+  gate('bud',G.budget.pass,'Budget',money(d.cost),'ceiling '+money(G.budget.limit),d.cost/(G.budget.limit*1.2),1/1.2,G.budget.pass?'OK':'OVER'),
   gate('mass',G.mass.pass,'Mass',Math.round(d.mass).toLocaleString('en-US')+' kg','limit 5,000 kg',d.mass/6000,5000/6000,G.mass.pass?'OK':'OVER'),
   gate('pow',G.power.pass,'Net power',(d.power>=0?'+':'')+d.power.toFixed(1)+' kW','gen '+gen.toFixed(1)+' · draw '+draw.toFixed(1),gen>0?draw/gen:1,null,G.power.pass?'SURPLUS':'DEFICIT'),
   gate('days',null,'Build time',d.days.toFixed(1)+' days','crew '+build.crew+' · '+Math.round(d.hours)+' work hours',d.days/60,null,'INFO'),
@@ -345,7 +350,7 @@ function setLocked(l){document.querySelectorAll('#bay button,#bay input').forEac
 function launch(){
  if(mode!=='build'||view!=='build')return;closeDeb();actx();
  fl=newFlight(build);prop0=fl.core.prop+fl.boosters.reduce((s,b)=>s+b.prop,0);samples=[];lastSample=-1;simAcc=0;paused=false;visAlt=0;exploded=false;
- rebuildRocket();debris.forEach(d=>scene&&scene.remove(d.g));debris.length=0;
+ debris.forEach(d=>scene&&scene.remove(d.g));debris.length=0;rebuildRocket();
  mode='countdown';cdT=3.2;setLocked(true);$('#launch').hidden=true;$('#log').innerHTML='';
  $('#tele').hidden=false;$('#speedRow').hidden=false;renderSpeed();$('#hint').textContent='Drag to orbit · Scroll to zoom';setStatus('Countdown');
  cam.dist=17;cam.pol=1.3;announce('Launch sequence started');startRumble();
@@ -367,7 +372,8 @@ function endFlight(){
  if(mode==='ended')return;mode='ended';samples.push({t:fl.t,alt:fl.y/1000,v:fl.v});stopRumble();$('#speedRow').hidden=true;
  const o=fl.outcome;setStatus(o==='ORBIT'?'Orbit reached':o==='PAD_CRASH'?'Lost on pad':o==='BREAKUP'?'Structural failure':o==='POWER'?'Power failure':'Suborbital');
  if(o==='ORBIT'){blip(660,.2,'sine',.05);setTimeout(()=>blip(880,.3,'sine',.05),180);}
- const wait=o==='ORBIT'||o==='POWER'?2600:1500;
+ if((o==='ORBIT'||o==='POWER')&&build.counts['solar-wing']){logEv('Solar arrays deployed','ok',fl.t);}
+ const wait=o==='ORBIT'||o==='POWER'?3600:1500;
  debTimer=setTimeout(showDeb,wait);
 }
 
@@ -375,7 +381,7 @@ function endFlight(){
 function gateText(k,g,d,b){
  const m=MATS[b.mat].n;
  if(k==='twr')return g.pass?'Thrust is '+g.value.toFixed(2)+'× the rocket’s weight. The minimum is 1.20.':'Thrust is only '+g.value.toFixed(2)+'× the rocket’s weight. It must be at least 1.20 to leave the pad.';
- if(k==='budget')return g.pass?'Hardware and crew cost '+money(g.value)+', under the $1.00M ceiling.':'Hardware and crew cost '+money(g.value)+', which is '+money(g.value-g.limit)+' over the $1.00M ceiling.';
+ if(k==='budget')return g.pass?'Hardware and crew cost '+money(g.value)+', under the '+money(g.limit)+' ceiling.':'Hardware and crew cost '+money(g.value)+', which is '+money(g.value-g.limit)+' over the '+money(g.limit)+' ceiling.';
  if(k==='mass')return g.pass?'Launch mass is '+Math.round(g.value)+' kg, within the 5,000 kg pad limit.':'Launch mass is '+Math.round(g.value)+' kg, which is '+Math.round(g.value-g.limit)+' kg over the pad limit.';
  if(k==='power')return g.pass?'Generation beats consumption by '+g.value.toFixed(1)+' kW.':'Consumption exceeds generation by '+(-g.value).toFixed(1)+' kW. Payloads go dark in orbit.';
  return g.pass?'Liftoff load is '+g.value.toFixed(2)+' g. '+m+' holds up to '+g.limit.toFixed(1)+' g.':'Liftoff load is '+g.value.toFixed(2)+' g but '+m+' only holds '+g.limit.toFixed(1)+' g. The structure breaks on ascent.';
@@ -385,7 +391,7 @@ function chart(label,unit,key,col){
  const W=320,H=130,l=38,b=20,t=8,r=10;const S=samples;const mt=Math.max(1,S[S.length-1].t);let mv=1;S.forEach(s=>{mv=Math.max(mv,s[key]);});
  const X=v=>l+(W-l-r)*v/mt,Y=v=>H-b-(H-b-t)*Math.max(0,v)/mv;
  const pts=S.map(s=>X(s.t).toFixed(1)+','+Y(s[key]).toFixed(1)).join(' ');const e=S[S.length-1];
- const evs=fl.events.filter(x=>/separation|cutoff/.test(x.s)).map(x=>'<line class="ev" x1="'+X(x.t)+'" x2="'+X(x.t)+'" y1="'+t+'" y2="'+(H-b)+'"/>').join('');
+ const evs=fl.events.filter(x=>/separation|cutoff|jettison/.test(x.s)).map(x=>'<line class="ev" x1="'+X(x.t)+'" x2="'+X(x.t)+'" y1="'+t+'" y2="'+(H-b)+'"/>').join('');
  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label+' over time, peak '+mv.toFixed(key==='alt'?0:0)+' '+unit+'"><line class="ax" x1="'+l+'" x2="'+l+'" y1="'+t+'" y2="'+(H-b)+'"/><line class="ax" x1="'+l+'" x2="'+(W-r)+'" y1="'+(H-b)+'" y2="'+(H-b)+'"/>'+evs+'<polyline class="ln" points="'+pts+'"/><circle cx="'+X(e.t)+'" cy="'+Y(e[key])+'" r="3"/><text x="4" y="'+(t+8)+'">'+Math.round(mv)+'</text><text x="4" y="'+(H-b)+'">0</text><text x="'+l+'" y="'+(H-5)+'">0 s</text><text x="'+(W-r)+'" y="'+(H-5)+'" text-anchor="end">'+Math.round(mt)+' s</text><text x="'+(l+6)+'" y="'+(t+8)+'">'+label+' ('+unit+')</text></svg>';
 }
 function showDeb(){
@@ -438,6 +444,11 @@ function setView(v){if(mode!=='build'&&v==='hero')return;view=v;$('#app').classL
 document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;par.tx=e.clientX/innerWidth-.5;par.ty=e.clientY/innerHeight-.5;});
 document.addEventListener('click',e=>{
  const t=e.target.closest('button,[data-tab]');if(!t)return;
+ if(t.dataset.pk){pkAct(t.dataset.pk);return;}
+ if(t.dataset.pkw){build.world=build.world;setWorld(t.dataset.pkw);renderPeek();return;}
+ if(t.dataset.pkobj){mission.obj=t.dataset.pkobj;renderPeek();return;}
+ if(t.dataset.pkb){setBudget(+t.dataset.pkb);return;}
+ if(t.dataset.pkm){setMat(t.dataset.pkm);cache.clear();renderPeek();return;}
  if(t.dataset.view){setView(t.dataset.view);return;}
  if(t.dataset.world){setWorld(t.dataset.world);return;}
  if(t.dataset.tab){tab=t.dataset.tab;renderTabs();renderCatalog();return;}
@@ -468,6 +479,54 @@ document.addEventListener('keydown',e=>{if(e.target.matches&&e.target.matches('i
  else if(k==='r'&&mode==='build'){setBuild(fresh(),null,'Reset to starter build');}
  else if(k==='z'&&mode==='build'){if(e.shiftKey){$('#redo').click();}else{$('#undo').click();}}
 });
+
+
+/* ---------- mission setup side peek ---------- */
+const OBJ={science:['Science mission','Carry instruments and a camera. Needs steady power and a light structure.'],cargo:['Cargo delivery','Lift as much payload as possible. Favours cheap strong materials.'],crew:['Crew demo','Crew capsule on board. Favours strength and heat tolerance.'],tech:['Technology demo','Prove a new design cheaply. Favours fast builds and low cost.']};
+const OBJ_USE={science:['cfrp','al-lithium'],cargo:['steel','al-standard'],crew:['titanium','al-lithium'],tech:['printed','reclaimed']};
+const MCOL={'Aluminium':'#9fb3c8','Iron':'#d5dce5','Chromium':'#7fb6c9','Nickel':'#b8c2a6','Titanium':'#7a8496','Carbon fibre':'#4a5262','Epoxy resin':'#c28f5a','Copper':'#d98b5f','Lithium':'#c084fc','Silicon':'#e0c870','Vanadium':'#86efac','Ceramic':'#e0a06a','Stainless steel':'#d5dce5','Magnesium':'#fca5a5'};
+const colOf=n=>MCOL[n]||'#64748b';
+const STEPS=['Destination','Budget','Materials','Review'];let pkStep=0;
+function setBudget(v){build.budget=clamp(Math.round(v/1e5)*1e5,1e6,50e6);cache.clear();renderPeek();renderAll();}
+function pkAct(a){const P=$('#peek');
+ if(a==='open'){pkStep=0;P.hidden=false;renderPeek();setTimeout(()=>{const x=$('.pk-x');if(x)x.focus();},30);return;}
+ if(a==='close'){P.hidden=true;return;}
+ if(a==='back'){pkStep=Math.max(0,pkStep-1);renderPeek();return;}
+ if(a==='next'){if(pkStep<STEPS.length-1){pkStep++;renderPeek();}else{P.hidden=true;setView('build');renderAll();logEv('Mission set: '+OBJ[mission.obj][0]+', '+WN[build.world]+', budget '+money(build.budget),'');}return;}
+ if(typeof a==='string'&&a.indexOf('step')===0){pkStep=+a.slice(4);renderPeek();}}
+function compBar(c){return '<div class="cbar" role="img" aria-label="Composition">'+c.map(x=>'<i style="width:'+x[1]+'%;background:'+colOf(x[0])+'"></i>').join('')+'</div><div class="cl">'+c.map(x=>'<span><b style="color:'+colOf(x[0])+'">●</b> '+x[0]+' '+x[1]+'%</span>').join('')+'</div>';}
+const VT={yes:'Suits',maybe:'Maybe',no:'Poor fit'};
+function renderPeek(){if($('#peek').hidden)return;
+ $('#pkSteps').innerHTML=STEPS.map((s,i)=>'<button data-pk="step'+i+'" aria-current="'+(i===pkStep)+'" class="'+(i<pkStep?'done':'')+'">'+(i+1)+' '+s+'</button>').join('');
+ $('#pkS').textContent='Step '+(pkStep+1)+' of '+STEPS.length+'. Everything here updates your build checks live.';
+ $('#pkBack').disabled=pkStep===0;$('#pkNext').textContent=pkStep===STEPS.length-1?'Start building':'Next';
+ let h='';const B=$('#pkBody'),keep=B.scrollTop;
+ if(pkStep===0){
+  h+='<h4>Destination</h4>'+Object.keys(COPY).map(k=>'<button class="opt" data-pkw="'+k+'" aria-pressed="'+(k===build.world)+'"><b>'+WN[k]+'</b><small>'+WORLD_TIP[k]+'</small></button>').join('');
+  h+='<h4>Mission objective</h4>'+Object.keys(OBJ).map(k=>'<button class="opt" data-pkobj="'+k+'" aria-pressed="'+(k===mission.obj)+'"><b>'+OBJ[k][0]+'</b><small>'+OBJ[k][1]+'</small></button>').join('');}
+ else if(pkStep===1){
+  const d=evalBuild(build);
+  h+='<h4>Budget ceiling</h4><div class="bnum">'+money(build.budget)+'</div><input id="bud" type="range" min="1000000" max="50000000" step="500000" value="'+build.budget+'" aria-label="Budget"><div class="presets">'+[1e6,5e6,10e6,25e6,50e6].map(v=>'<button data-pkb="'+v+'" aria-pressed="'+(v===build.budget)+'">'+money(v)+(v===DEFAULT_BUDGET?' default':'')+'</button>').join('')+'</div>'
+   +'<div class="use"><b>Current build costs '+money(d.cost)+'</b><p>'+Math.round(d.cost/build.budget*100)+'% of the budget used. Crew above 4 people and exotic materials add cost. Mixing materials adds cost and build time.</p></div>';}
+ else if(pkStep===2){
+  const sel=build.mat;
+  h+='<h4>Materials for '+WN[build.world]+'</h4><p class="note">Tap a material to use it. Each card tests it against your current design, destination and budget.</p>';
+  h+=Object.keys(MATS).map(k=>{const m=MATS[k],r=suitability(k,build);const nm=m.n||k;
+   return '<button class="opt" data-pkm="'+k+'" aria-pressed="'+(k===sel)+'"><b>'+nm+'<span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></b><small>'+(m.note||'')+'</small>'+compBar(m.comp||[])+'<div class="cl"><span>Mass x'+m.m.toFixed(2)+'</span><span>Cost x'+m.c.toFixed(2)+'</span><span>Time x'+m.t.toFixed(2)+'</span><span>Strength x'+m.s.toFixed(2)+'</span><span>Heat x'+m.h.toFixed(2)+'</span></div><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></button>';}).join('');
+  h+='<h4>Custom blend</h4><p class="note">Mix your own alloy. Percentages are normalised to 100.</p>'+Object.keys(CONST).map(k=>'<div class="mrow"><label for="cm-'+k+'">'+CONST[k].n+'</label><input id="cm-'+k+'" data-cm="'+k+'" type="range" min="0" max="100" step="5" value="'+(build.comp[k]||0)+'"><span id="cv-'+k+'">'+(build.comp[k]||0)+'</span></div>').join('');
+  h+='<h4>What to use where</h4>'+USES.map(u=>'<div class="use"><b>'+u.use+'</b><p>'+u.why+'</p><div class="pk">'+u.pick.map(p=>'<span>'+(MATS[p].n||p)+'</span>').join('')+'</div></div>').join('');
+  h+='<div class="use"><b>For a '+OBJ[mission.obj][0].toLowerCase()+'</b><p>Best starting picks: '+OBJ_USE[mission.obj].map(p=>MATS[p].n||p).join(' or ')+'.</p></div>';}
+ else{
+  const d=evalBuild(build),r=suitability(build.mat,build),G=d.gates;
+  h+='<h4>Review</h4><dl class="sum"><dt>Destination</dt><dd>'+WN[build.world]+'</dd><dt>Objective</dt><dd>'+OBJ[mission.obj][0]+'</dd><dt>Budget</dt><dd>'+money(build.budget)+'</dd><dt>Material</dt><dd>'+(MATS[build.mat].n||build.mat)+' <span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></dd></dl>'
+   +'<div class="use"><b>Material check</b><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></div>'
+   +'<div class="use"><b>Starter build</b><p>'+money(d.cost)+', '+Math.round(d.mass)+' kg, '+d.days.toFixed(0)+' days. Add engines and tanks in the builder to pass every launch check.</p></div>';}
+ B.innerHTML=h;B.scrollTop=keep;}
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='bud'){build.budget=clamp(+t.value,1e6,50e6);t.previousElementSibling.textContent=money(build.budget);cache.clear();renderAll();return;}
+ if(t.dataset&&t.dataset.cm){build.comp[t.dataset.cm]=+t.value;$('#cv-'+t.dataset.cm).textContent=t.value;setCustom(build.comp);cache.clear();if(build.mat==='custom')renderAll();}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&(t.dataset.cm||t.id==='bud'))renderPeek();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#peek').hidden){$('#peek').hidden=true;e.stopPropagation();}},true);
 
 /* ---------- main loop ---------- */
 let last=performance.now();

@@ -26,3 +26,9 @@ Ascent physics is simplified for learning. Not affiliated with NASA.
 
 ## Deploy to Vercel
 Import this repo at vercel.com/new. It is a static site: no build command, output directory `.` (already set in `vercel.json`).
+
+## Mission setup (side peek)
+"Plan mission" opens a side panel (bottom sheet on phones): destination and objective, budget (default $10M), materials with composition, a suits / maybe / poor-fit verdict against the current design, a custom blend mixer, and a what-to-use-where guide. Launch checks use the chosen budget.
+
+## Staging
+Boosters separate, the engine section drops after core cutoff, the fairing splits at 70 km and the solar array deploys in orbit.
