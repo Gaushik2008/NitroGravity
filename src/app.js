@@ -199,15 +199,15 @@ function buildSpace(){
 }
 
 const WSKY={earth:[.47,.66,.86],moon:[0,0,0],mars:[.74,.5,.36]},WFOG={earth:[.66,.8,.93],moon:[0,0,0],mars:[.8,.58,.44]},WFD={earth:.0042,moon:0,mars:.003};
-function applyWorld(w){curWorld=w;if(!R||!site)return;const m=w==='moon',r=w==='mars';
- ground.material.map=gTex[w];ground.material.needsUpdate=true;planet.material.map=wTex[w];planet.material.needsUpdate=true;planet.rotation.z=w==='earth'?1.1:0;
- clouds.visible=w==='earth';treesM.visible=w==='earth';earthBall.visible=m;planets.moon.visible=!m;planets.mars.visible=!r;
- atmo.material.uniforms.col.value.set(r?0xff8a3d:0x52a0ff);sunL.color.setHex(m?0xffffff:r?0xffd9b0:0xfff0dc);ap.material.color.setHex(r?0xb08070:m?0x9a9aa0:0xffffff);
- mtns.forEach(q=>q.material.color.setHSL(m?.62:r?.04:.28,m?.04:r?.5:.16,m?.3:r?.3:.3));}
-function skyFor(alt){const sk=clamp(alt/70000,0,1),dk=Math.pow(1-sk,1.7),S=WSKY[curWorld],F=WFOG[curWorld],mn=curWorld==='moon';
- scene.background.setRGB(S[0]*dk,S[1]*dk,S[2]*dk);scene.fog.color.setRGB(F[0]*dk,F[1]*dk,F[2]*dk);scene.fog.density=WFD[curWorld]*Math.pow(1-clamp(alt/26000,0,1),3);
- stars.material.opacity=mn?1:(curWorld==='mars'?.25:0)+(1-(curWorld==='mars'?.25:0))*clamp((alt-18000)/40000,0,1);hemiL.intensity=mn?.1:.1+.3*dk;sunL.intensity=1.3+.9*sk;
- atmo.material.uniforms.fade.value=mn?0:clamp((alt-12000)/30000,0,1);ground.visible=site.visible=alt<45000;sunSpr.material.opacity=.55+.45*sk;}
+function applyWorld(w){curWorld='earth';if(!R||!site)return;
+ ground.material.map=gTex.earth;ground.material.needsUpdate=true;planet.material.map=wTex.earth;planet.material.needsUpdate=true;planet.rotation.z=1.1;
+ clouds.visible=true;treesM.visible=true;earthBall.visible=false;planets.moon.visible=true;planets.mars.visible=true;
+ atmo.material.uniforms.col.value.set(0x52a0ff);sunL.color.setHex(0xfff0dc);ap.material.color.setHex(0xffffff);
+ mtns.forEach(q=>q.material.color.setHSL(.28,.16,.3));}
+function skyFor(alt){const sk=clamp(alt/70000,0,1),dk=Math.pow(1-sk,1.7),S=WSKY.earth,F=WFOG.earth;
+ scene.background.setRGB(S[0]*dk,S[1]*dk,S[2]*dk);scene.fog.color.setRGB(F[0]*dk,F[1]*dk,F[2]*dk);scene.fog.density=WFD.earth*Math.pow(1-clamp(alt/26000,0,1),3);
+ stars.material.opacity=clamp((alt-18000)/40000,0,1);hemiL.intensity=.1+.3*dk;sunL.intensity=1.3+.9*sk;
+ atmo.material.uniforms.fade.value=clamp((alt-12000)/30000,0,1);ground.visible=site.visible=alt<45000;sunSpr.material.opacity=.55+.45*sk;}
 const GG=()=>WORLDS[curWorld].g;
 function arms_ok(){return armP.length>0;}
 
@@ -642,12 +642,12 @@ const COPY={
  mars:{eye:'Mission : <b>The red frontier</b>',t:'Mars',c:'A dusty, cold world with a very thin atmosphere and 38% of Earth’s gravity. Fewer drag losses, but every kilogram you carry still counts against the budget.',s:[['Surface gravity','3.71','m/s²'],['Air density','0.020','kg/m³'],['Planet radius','3,390','km'],['Planet type','Terrestrial','']]}
 };
 const WN={earth:'Earth',moon:'Moon',mars:'Mars'};
-function renderHero(){const w=build.world,c=COPY[w];
- $('#wtabs').innerHTML=Object.keys(COPY).map(k=>'<button data-world="'+k+'" aria-pressed="'+(k===w)+'">'+(k==='earth'?'Earth orbit':WN[k])+'</button>').join('');
+function renderHero(){const w='earth',c=COPY[w];
+ $('#wtabs').innerHTML='';
  $('#hEye').innerHTML=c.eye;$('#hTitle').textContent=c.t;$('#hCopy').textContent=c.c;
  $('#hStrip').innerHTML=c.s.map(x=>'<div><small>'+x[0]+'</small><b>'+x[1]+(x[2]?'<span>'+x[2]+'</span>':'')+'</b></div>').join('');
- $('#wsel').innerHTML=Object.keys(COPY).map(k=>'<button data-world="'+k+'" aria-pressed="'+(k===w)+'">'+WN[k]+'</button>').join('');}
-function setWorld(w){if(mode!=='build'||!COPY[w])return;if(w!==build.world){build.world=w;cache.clear();}document.body.dataset.world=w;applyWorld(w);renderHero();renderAll();logEv('Destination: '+WN[w],'');announce('Destination '+WN[w]);}
+ $('#wsel').innerHTML='';}
+function setWorld(w){if(mode!=='build')return;document.body.dataset.world='earth';applyWorld('earth');renderHero();renderAll();}
 function setView(v){if(mode!=='build'&&v==='hero')return;view=v;$('#app').classList.toggle('hero',v==='hero');$('#nv-hero').setAttribute('aria-current',String(v==='hero'));$('#nv-build').setAttribute('aria-current',String(v==='build'));
  cam.user=0;cam.pol=v==='hero'?1.42:1.32;cam.goal=v==='hero'?(innerWidth<900?34:24):17;cam.dist=cam.goal+(v==='hero'?9:5);if(v==='build')renderAll();
  setTimeout(resize,30);}
@@ -657,8 +657,7 @@ document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pa
 document.addEventListener('click',e=>{
  const t=e.target.closest('button,[data-tab]');if(!t)return;
  if(t.dataset.pk){pkAct(t.dataset.pk);return;}
- if(t.dataset.pkw){build.world=build.world;setWorld(t.dataset.pkw);renderPeek();return;}
- if(t.dataset.pkobj){mission.obj=t.dataset.pkobj;renderPeek();return;}
+  if(t.dataset.pkobj){mission.obj=t.dataset.pkobj;renderPeek();return;}
  if(t.dataset.pkb){setBudget(+t.dataset.pkb);return;}
  if(t.dataset.pkm){setMat(t.dataset.pkm);cache.clear();renderPeek();return;}
  if(t.dataset.view){setView(t.dataset.view);return;}
@@ -711,7 +710,7 @@ const OBJ={science:['Science mission','Carry instruments and a camera. Needs ste
 const OBJ_USE={science:['cfrp','al-lithium'],cargo:['steel','al-standard'],crew:['titanium','al-lithium'],tech:['printed','reclaimed']};
 const MCOL={'Aluminium':'#9fb3c8','Iron':'#d5dce5','Chromium':'#7fb6c9','Nickel':'#b8c2a6','Titanium':'#7a8496','Carbon fibre':'#4a5262','Epoxy resin':'#c28f5a','Copper':'#d98b5f','Lithium':'#c084fc','Silicon':'#e0c870','Vanadium':'#86efac','Ceramic':'#e0a06a','Stainless steel':'#d5dce5','Magnesium':'#fca5a5'};
 const colOf=n=>MCOL[n]||'#64748b';
-const STEPS=['Destination','Budget','Materials','Review'];let pkStep=0;
+const STEPS=['Mission','Budget','Materials','Review'];let pkStep=0;
 function setBudget(v){build.budget=clamp(Math.round(v/1e5)*1e5,1e6,50e6);cache.clear();renderPeek();renderAll();}
 function pkAct(a){const P=$('#peek');
  if(a==='open'){pkStep=0;P.hidden=false;renderPeek();setTimeout(()=>{const x=$('.pk-x');if(x)x.focus();},30);return;}
@@ -727,15 +726,14 @@ function renderPeek(){if($('#peek').hidden)return;
  $('#pkBack').disabled=pkStep===0;$('#pkNext').textContent=pkStep===STEPS.length-1?'Start building':'Next';
  let h='';const B=$('#pkBody'),keep=B.scrollTop;
  if(pkStep===0){
-  h+='<h4>Destination</h4>'+Object.keys(COPY).map(k=>'<button class="opt" data-pkw="'+k+'" aria-pressed="'+(k===build.world)+'"><b>'+WN[k]+'</b><small>'+WORLD_TIP[k]+'</small></button>').join('');
-  h+='<h4>Mission objective</h4>'+Object.keys(OBJ).map(k=>'<button class="opt" data-pkobj="'+k+'" aria-pressed="'+(k===mission.obj)+'"><b>'+OBJ[k][0]+'</b><small>'+OBJ[k][1]+'</small></button>').join('');}
+    h+='<h4>Mission objective</h4>'+Object.keys(OBJ).map(k=>'<button class="opt" data-pkobj="'+k+'" aria-pressed="'+(k===mission.obj)+'"><b>'+OBJ[k][0]+'</b><small>'+OBJ[k][1]+'</small></button>').join('');}
  else if(pkStep===1){
   const d=evalBuild(build);
   h+='<h4>Budget ceiling</h4><div class="bnum">'+money(build.budget)+'</div><input id="bud" type="range" min="1000000" max="50000000" step="500000" value="'+build.budget+'" aria-label="Budget"><div class="presets">'+[1e6,5e6,10e6,25e6,50e6].map(v=>'<button data-pkb="'+v+'" aria-pressed="'+(v===build.budget)+'">'+money(v)+(v===DEFAULT_BUDGET?' default':'')+'</button>').join('')+'</div>'
    +'<div class="use"><b>Current build costs '+money(d.cost)+'</b><p>'+Math.round(d.cost/build.budget*100)+'% of the budget used. Crew above 4 people and exotic materials add cost. Mixing materials adds cost and build time.</p></div>';}
  else if(pkStep===2){
   const sel=build.mat;
-  h+='<h4>Materials for '+WN[build.world]+'</h4><p class="note">Tap a material to use it. Each card tests it against your current design, destination and budget.</p>';
+  h+='<h4>Materials</h4><p class="note">Tap a material to use it. Each card tests it against your current design and budget.</p>';
   h+=Object.keys(MATS).map(k=>{const m=MATS[k],r=suitability(k,build);const nm=m.n||k;
    return '<button class="opt" data-pkm="'+k+'" aria-pressed="'+(k===sel)+'"><b>'+nm+'<span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></b><small>'+(m.note||'')+'</small>'+compBar(m.comp||[])+'<div class="cl"><span>Mass x'+m.m.toFixed(2)+'</span><span>Cost x'+m.c.toFixed(2)+'</span><span>Time x'+m.t.toFixed(2)+'</span><span>Strength x'+m.s.toFixed(2)+'</span><span>Heat x'+m.h.toFixed(2)+'</span></div><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></button>';}).join('');
   h+='<h4>Custom blend</h4><p class="note">Mix your own alloy. Percentages are normalised to 100.</p>'+Object.keys(CONST).map(k=>'<div class="mrow"><label for="cm-'+k+'">'+CONST[k].n+'</label><input id="cm-'+k+'" data-cm="'+k+'" type="range" min="0" max="100" step="5" value="'+(build.comp[k]||0)+'"><span id="cv-'+k+'">'+(build.comp[k]||0)+'</span></div>').join('');
@@ -743,7 +741,7 @@ function renderPeek(){if($('#peek').hidden)return;
   h+='<div class="use"><b>For a '+OBJ[mission.obj][0].toLowerCase()+'</b><p>Best starting picks: '+OBJ_USE[mission.obj].map(p=>MATS[p].n||p).join(' or ')+'.</p></div>';}
  else{
   const d=evalBuild(build),r=suitability(build.mat,build),G=d.gates;
-  h+='<h4>Review</h4><dl class="sum"><dt>Destination</dt><dd>'+WN[build.world]+'</dd><dt>Objective</dt><dd>'+OBJ[mission.obj][0]+'</dd><dt>Budget</dt><dd>'+money(build.budget)+'</dd><dt>Material</dt><dd>'+(MATS[build.mat].n||build.mat)+' <span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></dd></dl>'
+  h+='<h4>Review</h4><dl class="sum"><dt>Objective</dt><dd>'+OBJ[mission.obj][0]+'</dd><dt>Budget</dt><dd>'+money(build.budget)+'</dd><dt>Material</dt><dd>'+(MATS[build.mat].n||build.mat)+' <span class="vd '+r.verdict+'">'+VT[r.verdict]+'</span></dd></dl>'
    +'<div class="use"><b>Material check</b><ul class="rs">'+r.reasons.map(x=>'<li class="'+x.k+'">'+x.t+'</li>').join('')+'</ul></div>'
    +'<div class="use"><b>Starter build</b><p>'+money(d.cost)+', '+Math.round(d.mass)+' kg, '+d.days.toFixed(0)+' days. Add engines and tanks in the builder to pass every launch check.</p></div>';}
  B.innerHTML=h;B.scrollTop=keep;}
