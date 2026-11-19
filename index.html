@@ -215,13 +215,35 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
   <div class="ov" id="nogl" hidden><p>3D view needs WebGL, which is not available here.<br>The builder, gauges and simulation still work.</p></div>
  </section>
  <aside id="bay" aria-label="Engineering bay">
+  <!-- Mission Planner - NEW -->
+  <section class="sec" aria-labelledby="mp"><h2 id="mp">Mission Planner</h2>
+   <div class="mp-fields">
+    <label for="mission-destination">Destination</label>
+    <input type="text" id="mission-destination" placeholder="e.g., Low Earth Orbit, Moon, Mars, GEO" autocomplete="off">
+    <label for="mission-purpose">Purpose</label>
+    <input type="text" id="mission-purpose" placeholder="e.g., Weather prediction, Communications, Scientific research, Earth observation" autocomplete="off">
+    <label for="mission-payload-mass">Payload Mass (kg)</label>
+    <input type="number" id="mission-payload-mass" placeholder="e.g., 500" min="1" max="5000" step="1">
+    <label for="mission-orbit-alt">Target Altitude (km)</label>
+    <input type="number" id="mission-orbit-alt" placeholder="e.g., 400" min="100" max="50000" step="1">
+    <button class="btn pri" id="generate-specs">Generate Specifications</button>
+   </div>
+   <div id="mission-suggestions" class="mp-suggestions" hidden></div>
+  </section>
+
   <section class="sec"><h2>Destination</h2><div class="wsel" id="wsel"></div></section>
   <section class="sec" aria-labelledby="hg"><h2 id="hg">Pre-flight gauges</h2><div class="gauges" id="gauges"></div></section>
+  
+  <!-- Specifications & Recommendations - NEW -->
+  <section class="sec" aria-labelledby="specs"><h2 id="specs">Rocket Specifications</h2>
+   <div id="rocket-specs" class="specs-panel"></div>
+  </section>
+  
   <section class="sec" aria-label="Parts catalog">
    <div class="tabs" role="tablist" id="tabs"></div>
    <div class="list" id="catalog" role="tabpanel"></div>
   </section>
-  <section class="sec" aria-labelledby="hx"><h2 id="hx">Examples &amp; history</h2>
+  <section class="sec" aria-labelledby="hx"><h2 id="hx">Examples & history</h2>
    <div class="row" id="examples"></div>
    <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="redo">Redo</button><button class="btn" id="reset">Reset</button></div>
   </section>
@@ -842,6 +864,218 @@ function closeDeb(){clearTimeout(debTimer);$('#deb').hidden=true;}
 function backToBuild(){closeDeb();mode='build';fl=null;exploded=false;visAlt=0;rky=0;if(R){debris.forEach(d=>scene.remove(d.g));debris.length=0;P.life.fill(0);SM.life.fill(0);rebuildRocket();rkGroup.visible=true;}
  $('#log').innerHTML='';$('#tele').hidden=true;$('#speedRow').hidden=true;$('#count').hidden=true;$('#launch').hidden=false;$('#hint').textContent='Drag to orbit · Scroll to zoom · L to launch';setStatus('Build');cam.dist=17;cam.pol=1.32;cam.user=0;stopRumble();setLocked(false);}
 
+/* ---------- Mission Planner - NEW ---------- */
+const MISSION_DB={
+ 'low earth orbit':{dv:9400,atm:true,g:9.81,typicalAlt:400},
+ 'geo':{dv:11900,atm:true,g:9.81,typicalAlt:35786},
+ 'moon':{dv:6400,atm:false,g:1.62,typicalAlt:100},
+ 'mars':{dv:7800,atm:true,g:3.71,typicalAlt:400},
+ 'leonardo':{dv:9700,atm:true,g:9.81,typicalAlt:550},
+ 'iss':{dv:9500,atm:true,g:9.81,typicalAlt:408},
+ 'polar':{dv:9700,atm:true,g:9.81,typicalAlt:800},
+ 'sun-synchronous':{dv:9700,atm:true,g:9.81,typicalAlt:700},
+ 'deep space':{dv:12000,atm:true,g:9.81,typicalAlt:1000},
+ 'venus':{dv:10500,atm:true,g:8.87,typicalAlt:300},
+ 'jupiter':{dv:20000,atm:true,g:24.79,typicalAlt:1000},
+ 'saturn':{dv:15000,atm:true,g:10.44,typicalAlt:1000}
+};
+const PURPOSE_SPECS={
+ 'weather':{power:4,comm:true,radar:true,lifetime:5,desc:'Weather satellites need radar, high power, and reliable comms'},
+ 'communication':{power:3,comm:true,antenna:true,lifetime:15,desc:'Comms sats need high power, large antennas, long life'},
+ 'earth observation':{power:3,camera:true,spectrometer:true,lifetime:7,desc:'EO sats need cameras, spectrometers, moderate power'},
+ 'scientific':{power:2,camera:true,spectrometer:true,radar:true,lifetime:10,desc:'Science missions need diverse instruments'},
+ 'navigation':{power:3,comm:true,atomic_clock:true,lifetime:12,desc:'Navigation sats need atomic clocks, comms'},
+ 'technology demo':{power:1,camera:true,lifetime:2,desc:'Tech demos are small, short-lived'},
+ 'crew':{power:5,life_support:true,comm:true,lifetime:10,desc:'Crewed missions need life support, high power'},
+ 'cargo':{power:1,comm:true,lifetime:1,desc:'Cargo missions are simple, one-way'},
+ 'sample return':{power:2,camera:true,spectrometer:true,comm:true,lifetime:3,desc:'Sample return needs science + comms for return'}
+};
+function inferMission(destInput,purposeInput){
+ const dest=destInput.toLowerCase().trim();
+ const purp=purposeInput.toLowerCase().trim();
+ let m=null;for(const k in MISSION_DB){if(dest.includes(k)||k.includes(dest)){m=MISSION_DB[k];break;}}
+ if(!m)m=MISSION_DB['low earth orbit'];
+ let p=null;for(const k in PURPOSE_SPECS){if(purp.includes(k)||k.includes(purp)){p=PURPOSE_SPECS[k];break;}}
+ if(!p)p={power:2,camera:true,lifetime:5,desc:'General purpose mission'};
+ return {dest:m,purpose:p,rawDest:destInput,rawPurpose:purposeInput};
+}
+function calcRocketSpecs(mission,payloadKg,targetAlt){
+ const {dest,purpose}=mission;
+ const g=dest.g;
+ const dv=dest.dv;
+ const isp=360;
+ const propMass=payloadKg*(Math.exp(dv/(isp*g))-1);
+ const totalMass=payloadKg+propMass;
+ const thrust=totalMass*g*1.5;
+ const structureMass=totalMass*0.15;
+ const dryMass=payloadKg+structureMass;
+ const wetMass=dryMass+propMass;
+ const stages=propMass>1500?2:1;
+ const coreDiameter=Math.max(2,Math.ceil(Math.pow(wetMass/1000,1/3)*1.5));
+ const length=coreDiameter*12;
+ const fuelType=dest.atm?'RP-1/LOX':'LH2/LOX';
+ const chamberPressure=dest.atm?100:70;
+ const nozzleExpansion=dest.atm?40:200;
+ const twr=thrust/(wetMass*g);
+ const buildTime=Math.max(180,Math.ceil(wetMass/100)*30);
+ const cost=Math.ceil(wetMass*8000+payloadKg*50000+buildTime*5000);
+ const materials={
+  structure:'Al-Li 2195 (primary), Ti-6Al-4V (high-stress), CFRP (fairings)',
+  tank:'Al-Li 2195 friction stir welded',
+  engine:'Inconel 718 (combustion chamber), Copper alloy (liner)',
+  tps:'PICA-X (if reentry), MLI (cryogenic)'
+ };
+ const physProps={
+  density:2700,
+  yieldStrength:450,
+  ultimateStrength:520,
+  youngModulus:73,
+  cte:22,
+  thermalCond:160,
+  meltingPoint:630
+ };
+ const chemProps={
+  fuel:fuelType.split('/')[0],
+  oxidizer:fuelType.split('/')[1],
+  mixtureRatio:fuelType.includes('RP-1')?2.56:6.0,
+  specificImpulse:isp,
+  combustionTemp:dest.atm?3700:3300,
+  cStar:dest.atm?1800:2400
+ };
+ return{
+  payload:payloadKg,
+  targetAlt,
+  dv:Math.round(dv),
+  propMass:Math.round(propMass),
+  dryMass:Math.round(dryMass),
+  wetMass:Math.round(wetMass),
+  thrust:Math.round(thrust/1000)+' kN',
+  twr:twr.toFixed(2),
+  stages,
+  coreDiameter:coreDiameter.toFixed(1)+' m',
+  length:length.toFixed(1)+' m',
+  fuelType,
+  chamberPressure:chamberPressure+' bar',
+  nozzleExpansion:nozzleExpansion+':1',
+  buildTime:buildTime+' days',
+  cost:'$'+cost.toLocaleString(),
+  materials,
+  physProps,
+  chemProps,
+  purposeDesc:purpose.desc,
+  requiredParts:{
+    power:purpose.power||0,
+    comm:purpose.comm||false,
+    camera:purpose.camera||false,
+    spectrometer:purpose.spectrometer||false,
+    radar:purpose.radar||false,
+    antenna:purpose.antenna||false,
+    lifeSupport:purpose.life_support||false,
+    atomicClock:purpose.atomic_clock||false
+  }
+ };
+}
+function renderMissionSuggestions(specs){
+ const s=$('#mission-suggestions');
+ s.hidden=false;
+ s.innerHTML=`
+  <div class="suggestion-card">
+   <h4>📋 Mission Analysis: ${specs.payload} kg to ${specs.targetAlt} km</h4>
+   <div class="spec-row"><b>Delta-V required</b><span>${specs.dv.toLocaleString()} m/s</span></div>
+   <div class="spec-row"><b>Propellant mass</b><span>${specs.propMass.toLocaleString()} kg</span></div>
+   <div class="spec-row"><b>Total wet mass</b><span>${specs.wetMass.toLocaleString()} kg</span></div>
+   <div class="spec-row"><b>Thrust required</b><span>${specs.thrust}</span></div>
+   <div class="spec-row"><b>TWR at liftoff</b><span>${specs.twr}</span></div>
+   <div class="spec-row"><b>Stages</b><span>${specs.stages}</span></div>
+   <div class="spec-row"><b>Core diameter</b><span>${specs.coreDiameter}</span></div>
+   <div class="spec-row"><b>Length</b><span>${specs.length}</span></div>
+   <div class="spec-row"><b>Fuel type</b><span>${specs.fuelType}</span></div>
+   <div class="spec-row"><b>Chamber pressure</b><span>${specs.chamberPressure}</span></div>
+   <div class="spec-row"><b>Nozzle expansion</b><span>${specs.nozzleExpansion}</span></div>
+   <div class="spec-row"><b>Build time</b><span>${specs.buildTime}</span></div>
+   <div class="spec-row"><b>Estimated cost</b><span>${specs.cost}</span></div>
+  </div>
+  <div class="suggestion-card">
+   <h4>🔬 Materials & Composition</h4>
+   <div class="prop-grid">
+    <div class="prop-item"><div class="prop-label">Structure</div><div class="prop-value">${specs.materials.structure}</div></div>
+    <div class="prop-item"><div class="prop-label">Tanks</div><div class="prop-value">${specs.materials.tank}</div></div>
+    <div class="prop-item"><div class="prop-label">Engine</div><div class="prop-value">${specs.materials.engine}</div></div>
+    <div class="prop-item"><div class="prop-label">TPS</div><div class="prop-value">${specs.materials.tps}</div></div>
+   </div>
+  </div>
+  <div class="suggestion-card">
+   <h4>⚗️ Physical Properties (Al-Li 2195 baseline)</h4>
+   <div class="prop-grid">
+    <div class="prop-item"><div class="prop-label">Density</div><div class="prop-value">${specs.physProps.density} kg/m³</div></div>
+    <div class="prop-item"><div class="prop-label">Yield Strength</div><div class="prop-value">${specs.physProps.yieldStrength} MPa</div></div>
+    <div class="prop-item"><div class="prop-label">Ultimate Strength</div><div class="prop-value">${specs.physProps.ultimateStrength} MPa</div></div>
+    <div class="prop-item"><div class="prop-label">Young's Modulus</div><div class="prop-value">${specs.physProps.youngModulus} GPa</div></div>
+    <div class="prop-item"><div class="prop-label">CTE</div><div class="prop-value">${specs.physProps.cte} ×10⁻⁶/K</div></div>
+    <div class="prop-item"><div class="prop-label">Thermal Conductivity</div><div class="prop-value">${specs.physProps.thermalCond} W/m·K</div></div>
+    <div class="prop-item"><div class="prop-label">Melting Point</div><div class="prop-value">${specs.physProps.meltingPoint}°C</div></div>
+   </div>
+  </div>
+  <div class="suggestion-card">
+   <h4>🧪 Chemical / Propulsion Properties</h4>
+   <div class="prop-grid">
+    <div class="prop-item"><div class="prop-label">Fuel</div><div class="prop-value">${specs.chemProps.fuel}</div></div>
+    <div class="prop-item"><div class="prop-label">Oxidizer</div><div class="prop-value">${specs.chemProps.oxidizer}</div></div>
+    <div class="prop-item"><div class="prop-label">Mixture Ratio (O/F)</div><div class="prop-value">${specs.chemProps.mixtureRatio}</div></div>
+    <div class="prop-item"><div class="prop-label">Specific Impulse</div><div class="prop-value">${specs.chemProps.specificImpulse} s</div></div>
+    <div class="prop-item"><div class="prop-label">Combustion Temp</div><div class="prop-value">${specs.chemProps.combustionTemp} K</div></div>
+    <div class="prop-item"><div class="prop-label">c* Efficiency</div><div class="prop-value">${specs.chemProps.cStar} m/s</div></div>
+   </div>
+  </div>
+  <div class="suggestion-card">
+   <h4>🎯 Mission Purpose Requirements</h4>
+   <div class="prop-grid">
+    <div class="prop-item"><div class="prop-label">Description</div><div class="prop-value" style="font-size:11px;color:var(--muted)">${specs.purposeDesc}</div></div>
+    <div class="prop-item"><div class="prop-label">Power Required</div><div class="prop-value">${specs.requiredParts.power} kW</div></div>
+    <div class="prop-item"><div class="prop-label">Comms</div><div class="prop-value">${specs.requiredParts.comm?'Yes':'No'}</div></div>
+    <div class="prop-item"><div class="prop-label">Camera</div><div class="prop-value">${specs.requiredParts.camera?'Yes':'No'}</div></div>
+    <div class="prop-item"><div class="prop-label">Spectrometer</div><div class="prop-value">${specs.requiredParts.spectrometer?'Yes':'No'}</div></div>
+    <div class="prop-item"><div class="prop-label">Radar</div><div class="prop-value">${specs.requiredParts.radar?'Yes':'No'}</div></div>
+    <div class="prop-item"><div class="prop-label">Life Support</div><div class="prop-value">${specs.requiredParts.lifeSupport?'Yes':'No'}</div></div>
+   </div>
+  </div>
+ `;
+}
+function renderRocketSpecs(specs){
+ const s=$('#rocket-specs');
+ s.innerHTML=`
+  <div class="spec-group">
+   <h4>📐 Vehicle Geometry</h4>
+   <div class="spec-grid">
+    <div class="spec-item"><div class="spec-label">Core Diameter</div><div class="spec-value">${specs.coreDiameter}</div></div>
+    <div class="spec-item"><div class="spec-label">Total Length</div><div class="spec-value">${specs.length}</div></div>
+    <div class="spec-item"><div class="spec-label">Stages</div><div class="spec-value">${specs.stages}</div></div>
+    <div class="spec-item"><div class="spec-label">Wet Mass</div><div class="spec-value">${specs.wetMass.toLocaleString()} kg</div></div>
+    <div class="spec-item"><div class="spec-label">Dry Mass</div><div class="spec-value">${specs.dryMass.toLocaleString()} kg</div></div>
+    <div class="spec-item"><div class="spec-label">Propellant</div><div class="spec-value">${specs.propMass.toLocaleString()} kg</div></div>
+   </div>
+  </div>
+  <div class="spec-group">
+   <h4>🚀 Propulsion</h4>
+   <div class="spec-grid">
+    <div class="spec-item"><div class="spec-label">Thrust (SL)</div><div class="spec-value">${specs.thrust}</div></div>
+    <div class="spec-item"><div class="spec-label">TWR</div><div class="spec-value">${specs.twr}</div></div>
+    <div class="spec-item"><div class="spec-label">Fuel</div><div class="spec-value">${specs.fuelType}</div></div>
+    <div class="spec-item"><div class="spec-label">Chamber Pressure</div><div class="spec-value">${specs.chamberPressure}</div></div>
+    <div class="spec-item"><div class="spec-label">Nozzle Expansion</div><div class="spec-value">${specs.nozzleExpansion}</div></div>
+    <div class="spec-item"><div class="spec-label">Delta-V</div><div class="spec-value">${specs.dv.toLocaleString()} m/s</div></div>
+   </div>
+  </div>
+  <div class="spec-group">
+   <h4>💰 Program</h4>
+   <div class="spec-grid">
+    <div class="spec-item"><div class="spec-label">Build Time</div><div class="spec-value">${specs.buildTime}</div></div>
+    <div class="spec-item"><div class="spec-label">Estimated Cost</div><div class="spec-value">${specs.cost}</div></div>
+   </div>
+  </div>
+ `;
+}
+
 /* ---------- hero, nav, worlds ---------- */
 const COPY={
  earth:{eye:'Mission : <b>Reach orbit</b>',t:'Earth',c:'Our home world pulls hard: 9.81 m/s² and a thick atmosphere that fights every metre of the climb. Design a rocket that beats gravity, drag and the budget, then fly it.',s:[['Surface gravity','9.81','m/s²'],['Air density','1.225','kg/m³'],['Planet radius','6,371','km'],['Planet type','Terrestrial','']]},
@@ -886,6 +1120,19 @@ document.addEventListener('click',e=>{
  if(t.id==='redo'&&redo.length&&mode==='build'){hist.push(clone(build));build=redo.pop();onChange(null,'Redo');return;}
  if(t.id==='reset'&&mode==='build'){setBuild(fresh(),null,'Reset to starter build');return;}
  if(t.id==='mute'){muted=!muted;t.textContent=muted?'Sound off':'Sound on';t.setAttribute('aria-pressed',String(muted));if(muted)stopRumble();return;}
+ if(t.id==='generate-specs'){
+  const dest=$('#mission-destination').value.trim();
+  const purp=$('#mission-purpose').value.trim();
+  const payload=+$('#mission-payload-mass').value||500;
+  const alt=+$('#mission-orbit-alt').value||400;
+  if(!dest||!purp){alert('Please enter destination and purpose');return;}
+  const mission=inferMission(dest,purp);
+  const specs=calcRocketSpecs(mission,payload,alt);
+  renderMissionSuggestions(specs);
+  renderRocketSpecs(specs);
+  announce('Specifications generated for '+payload+' kg to '+alt+' km');
+  return;
+ }
 });
 document.addEventListener('change',e=>{if(e.target.id==='crew')crewPending=false;});
 document.addEventListener('input',e=>{if(e.target.id==='crew'){setCrew(+e.target.value);const d=evalBuild(build);const c=$('#crew');if(c){const ch=c.parentNode.querySelector('.chips');if(ch)ch.innerHTML='<span>'+d.days.toFixed(1)+' days</span><span>'+money(Math.max(0,(build.crew-4)*30000))+' extra</span><span>'+Math.round(d.hours)+' work hours</span>';const ct=c.parentNode.querySelector('.cnt');if(ct)ct.textContent=build.crew+' people';}}});
