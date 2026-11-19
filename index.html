@@ -168,34 +168,34 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 @media (prefers-reduced-motion:reduce){.g .bar i{transition:none}}
 
 #peek{position:fixed;inset:0;z-index:30}
-.pk-scrim{position:absolute;inset:0;background:rgba(3,6,12,.62);backdrop-filter:blur(2px)}
-.pk-pan{position:absolute;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top,0px);animation:pkin .28s ease-out}
-@keyframes pkin{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
-.pk-h{padding:16px max(18px,env(safe-area-inset-right,0px)) 12px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.pk-h h3{margin:0;font:800 18px/1.1 var(--display);letter-spacing:-.01em}.pk-h p{margin:4px 0 0;color:var(--muted);font-size:12px}
-.pk-x{background:none;border:1px solid var(--line);color:var(--text);border-radius:3px;width:34px;height:34px;font-size:18px;line-height:1;cursor:pointer}
-.pk-st{display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid var(--line)}
-.pk-st button{flex:1;background:none;border:0;border-bottom:2px solid var(--line);color:var(--muted);font:700 10px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;padding:8px 0;cursor:pointer}
-.pk-st button[aria-current=true]{color:var(--text);border-bottom-color:var(--accent)}.pk-st button.done{border-bottom-color:#4ade80}
+.pk-scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
+.pk-pan{position:absolute;top:0;left:0;bottom:0;width:min(480px,100%);background:#000;border-right:1px solid #333;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top,0px);animation:pkin .28s ease-out}
+@keyframes pkin{from{transform:translateX(-30px);opacity:0}to{transform:none;opacity:1}}
+.pk-h{padding:16px max(18px,env(safe-area-inset-left,0px)) 12px 18px;border-bottom:1px solid #333;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pk-h h3{margin:0;font:800 18px/1.1 var(--display);letter-spacing:-.01em;color:#fff}.pk-h p{margin:4px 0 0;color:#888;font-size:12px}
+.pk-x{background:none;border:1px solid #333;color:#fff;border-radius:3px;width:34px;height:34px;font-size:18px;line-height:1;cursor:pointer}
+.pk-st{display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid #333}
+.pk-st button{flex:1;background:none;border:0;border-bottom:2px solid #333;color:#888;font:700 10px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;padding:8px 0;cursor:pointer}
+.pk-st button[aria-current=true]{color:#fff;border-bottom-color:#fff}.pk-st button.done{border-bottom-color:#4ade80}
 #pkBody{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;min-height:0}
-#pkBody h4{margin:0;font:700 12px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
-.pk-f{display:flex;gap:10px;padding:12px max(18px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) 18px;border-top:1px solid var(--line)}
+#pkBody h4{margin:0;font:700 12px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.pk-f{display:flex;gap:10px;padding:12px max(18px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px)) 18px;border-top:1px solid #333}
 .pk-f .btn{flex:1}
-.opt{display:block;width:100%;text-align:left;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:12px;color:var(--text);cursor:pointer;font:inherit}
-.opt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.opt b{display:block;font-size:14px}.opt small{display:block;color:var(--muted);margin-top:3px;font-size:12px;line-height:1.4}
+.opt{display:block;width:100%;text-align:left;background:#111;border:1px solid #333;border-radius:4px;padding:12px;color:#fff;cursor:pointer;font:inherit}
+.opt[aria-pressed=true]{border-color:#fff;box-shadow:inset 0 0 0 1px #fff}
+.opt b{display:block;font-size:14px}.opt small{display:block;color:#888;margin-top:3px;font-size:12px;line-height:1.4}
 .vd{display:inline-block;font:800 10px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:3px;margin-left:8px;vertical-align:2px}
-.vd.yes{background:#123524;color:#4ade80}.vd.maybe{background:#3a2d10;color:#fbbf24}.vd.no{background:#3b1519;color:#f87171}
-.cbar{display:flex;height:8px;border-radius:2px;overflow:hidden;margin:8px 0 4px;background:var(--line)}.cbar i{display:block;height:100%}
-.cl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted)}
+.vd.yes{background:#1a3d2e;color:#4ade80}.vd.maybe{background:#3d331a;color:#fbbf24}.vd.no{background:#3d1a1a;color:#f87171}
+.cbar{display:flex;height:8px;border-radius:2px;overflow:hidden;margin:8px 0 4px;background:#333}.cbar i{display:block;height:100%}
+.cl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:#888}
 .rs{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:3px;font-size:12px}.rs li{padding-left:16px;position:relative;line-height:1.35}
 .rs li:before{position:absolute;left:0;font-weight:800}.rs .ok:before{content:'✓';color:#4ade80}.rs .warn:before{content:'!';color:#fbbf24}.rs .bad:before{content:'✕';color:#f87171}
-.mrow{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center;font-size:12px}.mrow input{width:100%}
-.use{background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px 12px}.use b{font-size:13px}.use p{margin:3px 0 0;font-size:12px;color:var(--muted)}
-.use .pk{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.use .pk span{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11px}
-.bnum{font:900 40px/1 var(--display);letter-spacing:-.03em}.presets{display:flex;gap:6px;flex-wrap:wrap}.presets button{flex:1;min-width:64px;padding:9px 4px;background:var(--surface2);border:1px solid var(--line);border-radius:3px;color:var(--text);font:700 12px/1 var(--display);cursor:pointer}.presets button[aria-pressed=true]{border-color:var(--accent)}
-.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}.sum dt{color:var(--muted)}.sum dd{margin:0;font-weight:600}
-@media (max-width:900px){.pk-pan{top:auto;left:0;width:100%;height:90%;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;animation:pkup .28s ease-out}@keyframes pkup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}}
+.mrow{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center;font-size:12px}.mrow input{width:100%;background:#000;border:1px solid #333;color:#fff;padding:6px 8px;border-radius:3px}
+.use{background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px}.use b{font-size:13px;color:#fff}.use p{margin:3px 0 0;font-size:12px;color:#888}
+.use .pk{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.use .pk span{border:1px solid #333;border-radius:999px;padding:3px 9px;font-size:11px;color:#ccc}
+.bnum{font:900 40px/1 var(--display);letter-spacing:-.03em;color:#fff}.presets{display:flex;gap:6px;flex-wrap:wrap}.presets button{flex:1;min-width:64px;padding:9px 4px;background:#111;border:1px solid #333;border-radius:3px;color:#fff;font:700 12px/1 var(--display);cursor:pointer}.presets button[aria-pressed=true]{border-color:#fff}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}.sum dt{color:#888}.sum dd{margin:0;font-weight:600;color:#fff}
+@media (max-width:900px){.pk-pan{top:auto;left:0;right:0;width:100%;height:90%;border-right:0;border-top:1px solid #333;border-radius:0 0 14px 14px;animation:pkup .28s ease-out}@keyframes pkup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}}
 </style>
 <div id="peek" hidden role="dialog" aria-modal="true" aria-labelledby="pkT"><div class="pk-scrim" data-pk="close"></div><aside class="pk-pan"><div class="pk-h"><div><h3 id="pkT">Mission setup</h3><p id="pkS"></p></div><button class="pk-x" data-pk="close" aria-label="Close mission setup">×</button></div><div class="pk-st" id="pkSteps"></div><div id="pkBody"></div><div class="pk-f"><button class="btn" id="pkBack" data-pk="back">Back</button><button class="btn pri" id="pkNext" data-pk="next">Next</button></div></aside></div>
 <div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button id="nv-setup" data-pk="open">Setup</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
