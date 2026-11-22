@@ -75,7 +75,7 @@ function buildRocket(b){
  list.forEach((heavy,i)=>{
   const x=(i%2===0?-1:1)*(heavy?1.05:.95),r=heavy?.38:.27,h=heavy?3.8:3.2;
   const bg=new THREE.Group();bg.position.set(x,0,0);
-  bg.add(mesh(new THREE.CylinderGeometry(r,r,h,32),sm,0,h/2+.4,0));
+  bg.add(mesh(new THREE.CylinderGeometry(r,r,h,32),white,0,h/2+.4,0));
   bg.add(mesh(lathe(ogive(r,heavy?1.1:.95,12),32),accent,0,h+.4,0));
   bg.add(mesh(lathe(bellPts(r*.3,r*.62,.5),20),bellM,0,.05,0));
   [.9,h-.5].forEach(y=>{const t=mesh(new THREE.TorusGeometry(r+.004,.018,6,32),white,0,y,0);t.rotation.x=Math.PI/2;bg.add(t);});
@@ -109,10 +109,11 @@ function updParticles(dt){for(let i=0;i<NP;i++){const k=i*3;if(P.life[i]>0){P.li
  geoP.attributes.position.needsUpdate=true;geoP.attributes.color.needsUpdate=true;}
 function explode(x,y,z,n){for(let i=0;i<n;i++){const a=Math.random()*6.283,e=Math.random()*3.14-1.57,s=6+Math.random()*26;emit(x,y+2,z,Math.cos(a)*Math.cos(e)*s,Math.sin(e)*s*.9+6,Math.sin(a)*Math.cos(e)*s,.8+Math.random()*1.8,1,.45+Math.random()*.4,.12);}}
 const LOOK={earth:{sky:[22,35,59],gnd:[14,22,36],orb:[34,96,170],atm:0x58d0f5,pad:0x172236,sun:0xfff0dc,star:.3},moon:{sky:[3,4,8],gnd:[78,78,86],orb:[135,135,145],atm:null,pad:0x4a4b55,sun:0xffffff,star:1},mars:{sky:[104,58,36],gnd:[92,42,24],orb:[172,80,46],atm:0xff8a3d,pad:0x4d2719,sun:0xffd9b0,star:.25}};
-let gndMesh=null,padMesh=null,earthBall=null,sunSprite=null,exLight=null,curWorld='earth';
+let padArms=[],padTower=null,gndMesh=null,padMesh=null,earthBall=null,sunSprite=null,exLight=null,curWorld='earth';
 function glowTex(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');const gr=x.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.45)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
 function glow(color,size,x,y,z,tex){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:color,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));s.scale.set(size,size,1);s.position.set(x,y,z);return s;}
 function applyWorld(w){curWorld=w;if(!R)return;const L=LOOK[w];gndMesh.material.color.setRGB(L.gnd[0]/255,L.gnd[1]/255,L.gnd[2]/255);padMesh.material.color.setHex(L.pad);sunSprite.material.color.setHex(L.sun);sunL.color.setHex(L.sun);earthBall.visible=(w==='moon');atmo.material.color.setHex(L.atm||0x58d0f5);}
+const dark0=()=>M(0x14171d,{metalness:.5,roughness:.6});
 function init3D(){
  try{R=new THREE.WebGLRenderer({canvas:cv,antialias:true});}catch(e){R=null;$('#nogl').hidden=false;return;}
  R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -124,14 +125,33 @@ function init3D(){
  sunL=new THREE.DirectionalLight(0xfff0dc,1.2);sunL.position.set(-30,40,25);scene.add(sunL);
  const rim=new THREE.DirectionalLight(0x58d0f5,.6);rim.position.set(30,12,-30);scene.add(rim);
  exLight=new THREE.PointLight(0xff8a3d,0,70,2);scene.add(exLight);
+ const warm=new THREE.DirectionalLight(0xff9a6b,.55);warm.position.set(40,6,-25);scene.add(warm);
  gndMesh=new THREE.Mesh(new THREE.CircleGeometry(70,64),new THREE.MeshStandardMaterial({color:0x101a2a,roughness:.95,metalness:0}));gndMesh.rotation.x=-Math.PI/2;gndMesh.position.y=.02;scene.add(gndMesh);
  const grid=new THREE.GridHelper(140,70,0x2f5a93,0x172a45);grid.position.y=.05;grid.material.transparent=true;grid.material.opacity=.3;scene.add(grid);
  padMesh=new THREE.Mesh(new THREE.CircleGeometry(5.4,64),new THREE.MeshStandardMaterial({color:0x172236,roughness:.6,metalness:.4}));padMesh.rotation.x=-Math.PI/2;padMesh.position.y=.06;scene.add(padMesh);
  const ring=new THREE.Mesh(new THREE.RingGeometry(3.5,3.8,64),new THREE.MeshBasicMaterial({color:0xff8a3d,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.08;scene.add(ring);
  const tm=new THREE.MeshStandardMaterial({color:0x56637a,metalness:.7,roughness:.45});
- const tw=new THREE.Group();[[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]].forEach(p=>tw.add(mesh(new THREE.BoxGeometry(.12,15,.12),tm,p[0],7.5,p[1])));
- for(let y=1;y<15;y+=1.5){const d=mesh(new THREE.BoxGeometry(1.05,.05,.05),tm,0,y,.4);d.rotation.z=.6;tw.add(d);const e=mesh(new THREE.BoxGeometry(1.05,.05,.05),tm,0,y,-.4);e.rotation.z=-.6;tw.add(e);}
- [3,6.5,10,13.5].forEach(y=>tw.add(mesh(new THREE.BoxGeometry(3.6,.14,.2),tm,1.8,y,0)));tw.position.set(-4.4,0,0);scene.add(tw);
+ const conc=M(0x70747d,{roughness:.95,metalness:.05}),orng=M(0xe8741c,{roughness:.5,metalness:.3}),wht=M(0xe9edf3,{roughness:.6,metalness:.1}),steel=M(0x8a93a3,{roughness:.5,metalness:.6});
+ // concrete apron and flame trench
+ scene.add(mesh(new THREE.BoxGeometry(30,.1,26),conc,2,.03,2));
+ scene.add(mesh(new THREE.BoxGeometry(1.8,.12,12),M(0x0a0b0e,{roughness:1}),0,.1,6.5));
+ [[-1.3,-1.3],[1.3,-1.3],[-1.3,1.3],[1.3,1.3]].forEach(p=>scene.add(mesh(new THREE.CylinderGeometry(.14,.18,.35,12),steel,p[0],.2,p[1])));
+ // service tower with crane and swing arms
+ const tw=new THREE.Group();padArms=[];
+ [[-.7,-.7],[.7,-.7],[-.7,.7],[.7,.7]].forEach(p=>tw.add(mesh(new THREE.BoxGeometry(.16,21,.16),tm,p[0],10.5,p[1])));
+ for(let y=1;y<21;y+=1.4){[[0,.7,.6],[0,-.7,-.6],[.7,0,0],[-.7,0,0]].forEach((s,k)=>{const d=mesh(new THREE.BoxGeometry(k<2?1.5:.05,.05,k<2?.05:1.5),tm,s[0],y,s[1]);if(k<2)d.rotation.z=s[2];else d.rotation.x=.6;tw.add(d);});}
+ tw.add(mesh(new THREE.BoxGeometry(1.7,.35,1.7),steel,0,21.1,0));
+ tw.add(mesh(new THREE.BoxGeometry(5.5,.4,.7),orng,1.2,22,0));tw.add(mesh(new THREE.BoxGeometry(.7,1.1,.9),orng,-1.2,21.6,0));tw.add(mesh(new THREE.CylinderGeometry(.02,.02,2,6),dark0(),3.6,21,0));
+ [3.5,7,10.5,14,17.5].forEach((y,n)=>{const arm=new THREE.Group();arm.position.set(0,y,0);
+  arm.add(mesh(new THREE.BoxGeometry(3.4,.16,.9),n%2?orng:steel,1.9,0,0));
+  arm.add(mesh(new THREE.BoxGeometry(3.4,.5,.04),tm,1.9,.3,.44));arm.add(mesh(new THREE.BoxGeometry(3.4,.5,.04),tm,1.9,.3,-.44));
+  arm.add(mesh(new THREE.BoxGeometry(.4,.6,.7),wht,3.5,.1,0));
+  tw.add(arm);padArms.push({g:arm,k:n%2?1:-1,d:n*.18});});
+ tw.position.set(-3.4,0,0);scene.add(tw);padTower=tw;
+ // water tower, hangar, tank farm
+ {const wt=new THREE.Group();[[-.8,-.8],[.8,-.8],[-.8,.8],[.8,.8]].forEach(p=>wt.add(mesh(new THREE.CylinderGeometry(.07,.07,7,6),wht,p[0],3.5,p[1])));wt.add(mesh(new THREE.SphereGeometry(1.7,20,14),wht,0,8.2,0));wt.add(mesh(new THREE.CylinderGeometry(.5,.5,.6,12),wht,0,6.8,0));wt.position.set(17,0,-16);scene.add(wt);}
+ {const hg=new THREE.Group();hg.add(mesh(new THREE.BoxGeometry(16,7,8),M(0xd8dde6,{roughness:.7,metalness:.2}),0,3.5,0));hg.add(mesh(new THREE.BoxGeometry(16.1,.5,8.1),M(0x2d5da8,{roughness:.6}),0,6.6,0));hg.add(mesh(new THREE.BoxGeometry(6,4.6,.1),dark0(),0,2.3,4.05));hg.position.set(-20,0,-17);scene.add(hg);}
+ [[20,9],[22.5,9],[21.2,12]].forEach(p=>{scene.add(mesh(new THREE.CylinderGeometry(1.2,1.2,5,20),wht,p[0],2.5,p[1]));scene.add(mesh(new THREE.SphereGeometry(1.2,16,8,0,Math.PI*2,0,Math.PI/2),wht,p[0],5,p[1]));});
  const gt=glowTex();
  [[-14,-14],[14,-14],[-14,14],[14,14]].forEach(p=>{scene.add(mesh(new THREE.CylinderGeometry(.08,.08,6,8),tm,p[0],3,p[1]));scene.add(glow(0xfff0cc,5,p[0],6.2,p[1],gt));});
  scene.add(glow(0xff4d4d,1.4,-4.4,15.3,0,gt));
@@ -173,6 +193,11 @@ function frame3D(dt){
   const a=fl?fl.y:0;visAlt+=(a-visAlt)*Math.min(1,dt*14);rky=vis(visAlt);
  }else rky=0;
  rocketRoot.position.set(rkx,rky,rkz);
+ {const open=(mode==='countdown'&&cdT<2.4)||mode==='flight'||mode==='ended';
+  padArms.forEach(w=>{const tg=open?w.k*1.35:0;w.g.rotation.y+=(tg-w.g.rotation.y)*Math.min(1,dt*(open?2.2:1.2));});
+  if(mode==='countdown'&&cdT>0&&cdT<2.8&&R){for(let n=0;n<3;n++){const an=Math.random()*6.28;emit(Math.cos(an)*1.4,.3,Math.sin(an)*1.4,Math.cos(an)*3,2.5+Math.random()*3,Math.sin(an)*3,2.2,.8,.84,.9);}}
+  if(mode==='flight'&&rky<45&&R){const f=1-rky/45;for(let n=0;n<Math.ceil(8*f);n++){const an=Math.random()*6.28,sp=5+Math.random()*11;emit(Math.cos(an)*1.5,.4,Math.sin(an)*1.5,Math.cos(an)*sp,.6+Math.random()*2.2,Math.sin(an)*sp,3.2,.78,.74,.7);}
+   for(let n=0;n<2;n++)emit((Math.random()-.5)*2,.3,6+Math.random()*5,(Math.random()-.5)*2,1,9+Math.random()*6,2.4,1,.55,.2);}}
  // flames
  if(rk){
   const live=mode==='flight'&&fl&&(fl.phase==='burn'||fl.phase==='shake')&&!exploded;
