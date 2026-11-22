@@ -63,6 +63,41 @@ function suitability(key,b){
  const bad=R.filter(x=>x.k==='bad').length,warn=R.filter(x=>x.k==='warn').length;
  return {verdict:bad?'no':warn?'maybe':'yes',score:100-bad*30-warn*10,reasons:R,d,f};
 }
+
+/* ---------- mission planner (all launches start from Earth) ---------- */
+const DESTS={leo:{n:'Low Earth orbit',dv:9.4,alt:'400 km',note:'Fastest and cheapest. Weather, imaging and crew vehicles.'},sso:{n:'Sun-synchronous orbit',dv:9.8,alt:'700 km',note:'Polar orbit that passes over each place at the same local time.'},gto:{n:'Geostationary transfer',dv:11.8,alt:'35,786 km',note:'Fixed over one spot. Weather and communications.'},moon:{n:'Moon transfer',dv:12.6,alt:'384,400 km',note:'Trans-lunar injection. Needs a high-energy upper stage.'},mars:{n:'Mars transfer',dv:13.2,alt:'55-400 million km',note:'Earth escape plus cruise. Highest energy.'}};
+const PURPS={weather:{n:'Weather prediction',pl:1400,kw:3.2,inst:'Multispectral imager, infrared sounder, radiometer',dest:'gto',mat:'al-lithium',tip:'Needs steady power and a stable platform. Geostationary gives a constant view.'},comms:{n:'Communications',pl:3500,kw:8,inst:'Transponders, large solar arrays, antennas',dest:'gto',mat:'al-lithium',tip:'Large solar arrays and long life. Mass is high.'},earth:{n:'Earth observation',pl:900,kw:2,inst:'High-resolution camera, radar, spectrometer',dest:'sso',mat:'cfrp',tip:'Stiff, light structure keeps the camera steady.'},science:{n:'Space science',pl:600,kw:1.5,inst:'Telescope, spectrometer, particle detector',dest:'leo',mat:'cfrp',tip:'Cleanest and lightest build. Pointing accuracy matters most.'},crew:{n:'Crew transport',pl:4000,kw:6,inst:'Capsule, life support, abort system',dest:'leo',mat:'titanium',tip:'Strength, heat tolerance and safety come before cost.'},nav:{n:'Navigation',pl:1000,kw:2.5,inst:'Atomic clocks, signal transmitters',dest:'leo',mat:'al-lithium',tip:'Precise clocks need thermal stability.'},tech:{n:'Technology demo',pl:300,kw:.8,inst:'Test payload, basic telemetry',dest:'leo',mat:'printed',tip:'Cheap and quick. Accept lower margins.'}};
+const FUELS={kerolox:{n:'Kerosene + liquid oxygen',isp:311,rho:1.03,cost:.8,form:'RP-1 (C12H26 average) with O2, ratio about 2.6 to 1',burn:'C12H26 + 18.5 O2 gives 12 CO2 + 13 H2O',temp:'LOX boils at -183 C. RP-1 stays liquid at room temperature.',note:'Dense, storable, balanced. Best all-round first stage.'},lh2:{n:'Liquid hydrogen + liquid oxygen',isp:450,rho:.36,cost:3.2,form:'H2 with O2, ratio about 5.5 to 1',burn:'2 H2 + O2 gives 2 H2O',temp:'LH2 boils at -253 C. Needs heavy insulated tanks.',note:'Best efficiency. Low density means big tanks. Good for upper stages.'},solid:{n:'Solid composite (APCP)',isp:265,rho:1.75,cost:.5,form:'Ammonium perchlorate 69%, aluminium powder 18%, HTPB binder 12%, additives 1%',burn:'Aluminium and ammonium perchlorate burn to Al2O3, N2, HCl and H2O',temp:'Stable at room temperature. Cannot be shut down.',note:'Simple, cheap and strong kick. Best for strap-on boosters.'},hybrid:{n:'Hybrid (HTPB + N2O)',isp:280,rho:1.1,cost:.7,form:'HTPB solid fuel with nitrous oxide oxidiser',burn:'HTPB burns in N2O to give CO2, H2O and N2',temp:'N2O stored as liquid under pressure at 20 C.',note:'Safer and throttleable. Moderate performance.'}};
+const PROPS={'al-standard':{rho:2.84,ys:250,melt:'543-643 C',k:120,alloy:'Al 2219: Al 93.0, Cu 6.3, Mn 0.3, Zr 0.2, V 0.1',why:'Weldable and well understood. Keeps strength at cryogenic temperatures.'},'al-lithium':{rho:2.71,ys:560,melt:'540-650 C',k:100,alloy:'Al-Li 2195: Al 94.1, Cu 4.0, Li 1.0, Mg 0.4, Ag 0.4',why:'Lithium lowers density and raises stiffness, saving tank mass.'},steel:{rho:7.9,ys:500,melt:'1400-1450 C',k:16,alloy:'Stainless 304L: Fe 71, Cr 18, Ni 9, Mn 2',why:'Strong at both cryogenic and very hot temperatures. Cheap but dense.'},titanium:{rho:4.43,ys:880,melt:'1604-1660 C',k:6.7,alloy:'Ti-6Al-4V: Ti 90, Al 6, V 4',why:'Highest strength to weight among metals. Low conductivity protects hot sections.'},cfrp:{rho:1.6,ys:1500,melt:'Resin softens at about 180 C',k:6,alloy:'Carbon fibre 60, epoxy resin 38, fillers 2',why:'Very stiff and light. Cannot take direct engine heat.'},printed:{rho:2.67,ys:230,melt:'570-590 C',k:130,alloy:'AlSi10Mg: Al 89.6, Si 10, Mg 0.4',why:'Complex parts printed in one piece, cutting assembly time.'},reclaimed:{rho:2.7,ys:200,melt:'580-650 C',k:150,alloy:'Mixed 6xxx aluminium scrap: Al 92, Si 3, Mg 2, Fe 2, other 1',why:'Cheapest, lowest quality control. Fine for test articles.'}};
+function numOr(v,d){v=parseFloat(String(v).replace(/[^0-9.]/g,''));return isFinite(v)&&v>0?v:d;}
+function recommend(m){
+ const D=DESTS[m.dest]||DESTS.leo,P=PURPS[m.purp]||null;
+ const payload=numOr(m.payload,P?P.pl:500),budget=numOr(m.budget,DEFAULT_BUDGET);
+ const g0=9.81,loss=1500;
+ // choose fuel by energy needed
+ const hi=D.dv>=11.5;const up=hi?'lh2':'kerolox',lo=D.dv>=9.6||m.purp==='crew'?'kerolox':'kerolox';
+ const boost='solid';
+ const stages=[{name:'Strap-on boosters',fuel:boost},{name:'Core stage',fuel:lo},{name:'Upper stage',fuel:up}];
+ const dvT=(D.dv*1000+loss);
+ const split=[.30,.38,.32].map(x=>x*dvT);
+ const eps=[.09,.08,.10];
+ let mAbove=payload*1.12,tot=0,prop=0,stuct=0;const rows=[];
+ for(let i=2;i>=0;i--){const isp=FUELS[stages[i].fuel].isp;const r=Math.exp(split[i]/(isp*g0));const den=1-(1-1/r)/(1-eps[i]);
+  if(den<=.02){return {error:'Not reachable with chemical stages at this payload. Reduce payload or pick a nearer destination.'};}
+  const mi=mAbove/den;const p=mi*(1-1/r);const st=p*eps[i]/(1-eps[i]);rows[i]={stage:stages[i].name,fuel:FUELS[stages[i].fuel].n,prop:Math.round(p),dry:Math.round(st),dv:Math.round(split[i])};prop+=p;stuct+=st;mAbove=mi;}
+ const liftoff=mAbove;
+ const thrust=liftoff*g0*1.35/1000;
+ const mat=P?P.mat:'al-standard';
+ const M=MATS[mat];
+ const hw=stuct*(1800*M.c)+payload*45000*.15;
+ const fuelCost=rows.reduce((a,r,i)=>a+r.prop*FUELS[stages[i].fuel].cost,0);
+ const engines=thrust*1000*6;
+ const cost=hw+fuelCost+engines;
+ const days=Math.round(35+liftoff/1000*.9*M.t+(stuct/1000)*1.5);
+ const power=P?P.kw:1;
+ const tank=Math.round(rows[1].prop/FUELS.kerolox.rho/1000*10)/10;
+ return {dest:D,purp:P,payload:payload,budget:budget,rows:rows,liftoff:Math.round(liftoff),prop:Math.round(prop),dry:Math.round(stuct),thrustKN:Math.round(thrust),cost:cost,days:days,power:power,mat:mat,fuels:[...new Set(stages.map(s=>s.fuel))],dv:dvT,fits:cost<=budget,fillPct:Math.round(cost/budget*100),mpl:Math.round(payload/liftoff*1000)/10,tankM3:tank};
+}
 const PBY={}; PARTS.forEach(p=>PBY[p.id]=p);
 function matFor(b,p){ if(!p.struct) return MATS['al-standard']; if(p.id==='core-stage'&&b.mat==='printed') return MATS['al-standard']; return MATS[b.mat]; }
 function count(b,id){ const p=PBY[id]; return p.fixed?1:(b.counts[id]||0); }
@@ -178,4 +213,4 @@ const EXAMPLES={
  B:{name:'B · Clean orbit',counts:{camera:1,'solar-wing':1,'booster-side':1},mat:'al-standard',crew:4},
  C:{name:'C · Heavy hauler',counts:{'booster-heavy':2,radar:1,spectrometer:1,'solar-wing':1,rtg:1},mat:'al-standard',crew:4}
 };
-if(typeof module!=='undefined') module.exports={suitability,blend,setCustom,USES,WORLD_TIP,CONST,DEF_COMP,DEFAULT_BUDGET,WORLDS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
+if(typeof module!=='undefined') module.exports={recommend,DESTS,PURPS,FUELS,PROPS,suitability,blend,setCustom,USES,WORLD_TIP,CONST,DEF_COMP,DEFAULT_BUDGET,WORLDS,improve,neighbors,evalBuild,runHeadless,advise,EXAMPLES,MATS,PARTS,efficiency,failures,newFlight,stepFlight};
