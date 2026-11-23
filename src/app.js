@@ -187,7 +187,7 @@ function init3D(){
  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);cam.dragging=true;cam.user=4;});
  cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p[0],dy=e.clientY-p[1];p[0]=e.clientX;p[1]=e.clientY;
   if(ptrs.size===2){const a=[...ptrs.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(pinch)cam.dist=clamp(cam.dist*(pinch/d),7,80);pinch=d;}
-  else{cam.az-=dx*.007;cam.pol=clamp(cam.pol-dy*.006,.25,2.2);}cam.user=4;});
+  else{cam.az-=dx*.007;cam.pol=clamp(cam.pol-dy*.006,.25,rky>400?2.2:1.5);}cam.user=4;});
  const up=e=>{ptrs.delete(e.pointerId);pinch=0;if(!ptrs.size)cam.dragging=false;};
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
  cv.addEventListener('wheel',e=>{e.preventDefault();cam.dist=clamp(cam.dist*(1+Math.sign(e.deltaY)*.08),7,80);cam.user=4;},{passive:false});
@@ -246,6 +246,7 @@ function frame3D(dt){
  if(cam.user>0)cam.user-=dt;
  const lo=(mode==='flight'&&rky<30&&!RM)?.07*(1-rky/30):0,sh=shake+lo;const sx=sh&&!RM?(Math.random()-.5)*sh:0,sy=sh&&!RM?(Math.random()-.5)*sh:0;
  camera.position.set(tx+dist*Math.sin(camP)*Math.sin(cam.az)+sx,ty+dist*Math.cos(camP)+sy,tz+dist*Math.sin(camP)*Math.cos(cam.az));
+ if(rky<400&&camera.position.y<.9)camera.position.y=.9;
  camera.lookAt(tx,ty,tz);
  stars.position.set(camera.position.x,camera.position.y,camera.position.z);
  R.render(scene,camera);
