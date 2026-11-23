@@ -279,7 +279,15 @@ html{scroll-behavior:smooth}
 @keyframes lnPulse{0%,100%{box-shadow:0 0 0 0 rgba(230,0,35,.45)}50%{box-shadow:0 0 0 14px rgba(230,0,35,0)}}
 .card:nth-child(2){animation-delay:.04s}.card:nth-child(3){animation-delay:.08s}.card:nth-child(4){animation-delay:.12s}.card:nth-child(n+5){animation-delay:.16s}
 @media (prefers-reduced-motion:reduce){#count.pop,#banner,#deb,#deb .sheet,#app #bay,#app #hero,#launch,.card{animation:none!important}html{scroll-behavior:auto}}
+
+#ref{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:84px;width:200px;height:124px;border-radius:18px;overflow:hidden;z-index:6;box-shadow:0 10px 30px rgba(0,0,0,.5);background:#000;pointer-events:none}
+#ref img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:pkfade 18s infinite,pkzoom 18s infinite}
+#ref img:nth-child(2){animation-delay:6s}#ref img:nth-child(3){animation-delay:12s}
+#ref .cap{position:absolute;left:10px;bottom:8px;z-index:2;font:700 10px/1 var(--display);color:#fff;text-shadow:0 1px 6px #000}
+#app.hero~#ref,body:has(#app.hero) #ref{display:none}
+@media (max-width:900px){#ref{display:none}}
 </style>
+<div id="ref" aria-label="Reference launch photographs"><span class="cap">Real launches</span></div>
 <div id="peek" hidden role="dialog" aria-modal="true" aria-labelledby="pkT"><div class="pk-scrim" data-pk="close"></div><aside class="pk-pan"><div class="pk-h"><div><h3 id="pkT">Mission setup</h3><p id="pkS"></p></div><button class="pk-x" data-pk="close" aria-label="Close mission setup">×</button></div><div class="pk-ph" aria-hidden="true"><span class="cap">Launch complex · live view</span></div><div class="pk-st" id="pkSteps"></div><div id="pkBody"></div><div class="pk-f"><button class="btn" id="pkBack" data-pk="back">Back</button><button class="btn pri" id="pkNext" data-pk="next">Next</button></div></aside></div>
 <div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button id="nv-setup" data-pk="open">Setup</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
 <div id="app" class="hero">
