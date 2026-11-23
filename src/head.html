@@ -257,6 +257,28 @@ input[type=range]{width:100%;accent-color:var(--thrust)}
 .mp-fields input:focus{outline:0;border-color:var(--thrust)}.mp-fields input::placeholder{color:#6b6b73;font-weight:500}
 .mp-fields .btn{margin-top:12px;width:100%}
 .mp-suggestions{background:var(--surface2);border-radius:var(--radius);padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.28);animation:pinIn .4s both}
+
+/* ===== motion polish ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--thrust2);outline-offset:3px;border-radius:8px}
+.g .bar i{transition:width .7s cubic-bezier(.2,.8,.2,1),background-color .4s}
+.g .gv{transition:color .3s}
+#count.pop{animation:cdPop .95s cubic-bezier(.2,.9,.2,1) both}
+@keyframes cdPop{0%{transform:scale(1.9);opacity:0;filter:blur(10px)}22%{transform:scale(1);opacity:1;filter:none}75%{opacity:1}100%{transform:scale(.82);opacity:0}}
+#banner:not([hidden]){animation:bnIn .5s cubic-bezier(.2,.9,.2,1) both}
+@keyframes bnIn{from{opacity:0;transform:translateX(-50%) translateY(14px) scale(.96)}to{opacity:1;transform:translateX(-50%)}}
+#deb:not([hidden]){animation:fadeIn .45s ease both}#deb:not([hidden]) .sheet{animation:sheetIn .6s cubic-bezier(.2,.9,.2,1) both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes sheetIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
+#peek:not([hidden]) .pk-scrim{animation:fadeIn .35s ease both}
+#app:not(.hero) #bay{animation:bayIn .6s cubic-bezier(.2,.9,.2,1) both}
+@keyframes bayIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+#app.hero #hero{animation:heroIn .9s cubic-bezier(.2,.9,.2,1) both}
+@keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+#nav button{transition:color .2s,background .2s,transform .15s}#nav button:active{transform:scale(.95)}
+#launch:not([hidden]){animation:lnPulse 2.4s ease-in-out infinite}
+@keyframes lnPulse{0%,100%{box-shadow:0 0 0 0 rgba(230,0,35,.45)}50%{box-shadow:0 0 0 14px rgba(230,0,35,0)}}
+.card:nth-child(2){animation-delay:.04s}.card:nth-child(3){animation-delay:.08s}.card:nth-child(4){animation-delay:.12s}.card:nth-child(n+5){animation-delay:.16s}
+@media (prefers-reduced-motion:reduce){#count.pop,#banner,#deb,#deb .sheet,#app #bay,#app #hero,#launch,.card{animation:none!important}html{scroll-behavior:auto}}
 </style>
 <div id="peek" hidden role="dialog" aria-modal="true" aria-labelledby="pkT"><div class="pk-scrim" data-pk="close"></div><aside class="pk-pan"><div class="pk-h"><div><h3 id="pkT">Mission setup</h3><p id="pkS"></p></div><button class="pk-x" data-pk="close" aria-label="Close mission setup">×</button></div><div class="pk-ph" aria-hidden="true"><span class="cap">Launch complex · live view</span></div><div class="pk-st" id="pkSteps"></div><div id="pkBody"></div><div class="pk-f"><button class="btn" id="pkBack" data-pk="back">Back</button><button class="btn pri" id="pkNext" data-pk="next">Next</button></div></aside></div>
 <div id="nav"><button class="logo" data-view="hero" aria-label="Nitro Gravity home"><i></i>Nitro Gravity</button><nav aria-label="Primary"><button data-view="hero" id="nv-hero">Mission</button><button id="nv-setup" data-pk="open">Setup</button><button data-view="build" id="nv-build">Build<span class="lg"> &amp; launch</span></button><button id="mute" aria-pressed="false">Sound on</button></nav></div>
