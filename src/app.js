@@ -9,7 +9,7 @@ const START={counts:{camera:1,'solar-wing':1},mat:'al-standard',crew:4,world:'ea
 let view='hero';
 const fresh=()=>{const n=clone(START);n.world=build.world;n.budget=build.budget;n.comp=Object.assign({},build.comp);return n;};
 let build=clone(START), hist=[], redo=[], tab='propulsion', lastRun=null;
-let mode='build', fl=null, simAcc=0, speed=6, paused=false, cdT=0, visAlt=0, samples=[], lastSample=0, debTimer=null, prop0=1;
+let mode='build', fl=null, simAcc=0, speed=1, paused=false, cdT=0, visAlt=0, samples=[], lastSample=0, debTimer=null, prop0=1;
 const cache=new Map();
 function key(b){return JSON.stringify([Object.keys(b.counts).sort().map(k=>[k,b.counts[k]]),b.mat,b.crew,b.world||'earth',b.budget,b.mat==='custom'?b.comp:0]);}
 function sim(b){const k=key(b);if(!cache.has(k))cache.set(k,runHeadless(b));return cache.get(k);}
@@ -42,10 +42,23 @@ function lathe(pts,seg){return new THREE.LatheGeometry(pts.map(p=>new THREE.Vect
 function ogive(r,h,n){const a=[];for(let i=0;i<=n;i++){const t=i/n;a.push([Math.max(.002,r*Math.pow(1-Math.pow(t,1.7),.62)),t*h]);}return a;}
 function bellPts(r0,r1,h){return [[r1,0],[r1*.74,h*.42],[r0*1.12,h*.86],[r0,h]];}
 function decalTex(){const c=document.createElement('canvas');c.width=128;c.height=512;const x=c.getContext('2d');x.clearRect(0,0,128,512);x.save();x.translate(64,256);x.rotate(-Math.PI/2);x.fillStyle='#10151f';x.font='800 64px Inter, Arial, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('NITRO GRAVITY',0,0);x.restore();x.fillStyle='#ff8a3d';x.fillRect(8,20,6,472);x.fillRect(114,20,6,472);return new THREE.CanvasTexture(c);}
+
+function panelTex(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#f2f2f2';x.fillRect(0,0,512,512);
+ for(let i=0;i<8;i++){const sh=232+((i*37)%18);x.fillStyle='rgb('+sh+','+sh+','+sh+')';x.fillRect(0,i*64+2,512,60);}
+ x.fillStyle='rgba(0,0,0,.28)';for(let i=0;i<=8;i++)x.fillRect(0,i*64,512,2);for(let i=0;i<4;i++)x.fillRect(i*128+((i%2)*40),0,2,512);
+ x.fillStyle='rgba(0,0,0,.22)';for(let i=0;i<8;i++)for(let j=0;j<32;j++){x.fillRect(j*16+4,i*64+6,2,2);x.fillRect(j*16+4,i*64+54,2,2);}
+ for(let n=0;n<1400;n++){x.fillStyle='rgba(0,0,0,'+(Math.random()*.05)+')';x.fillRect(Math.random()*512,Math.random()*512,2+Math.random()*10,1);}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,2);try{t.anisotropy=4;}catch(e){}return t;}
+function boosterTex(){const c=document.createElement('canvas');c.width=256;c.height=512;const x=c.getContext('2d');x.fillStyle='#f4f4f4';x.fillRect(0,0,256,512);
+ x.fillStyle='rgba(0,0,0,.25)';for(let i=0;i<=8;i++)x.fillRect(0,i*64,256,2);
+ x.fillStyle='#e8741c';x.fillRect(0,40,256,22);x.fillRect(0,450,256,14);
+ x.save();x.translate(128,260);x.rotate(-Math.PI/2);x.fillStyle='#14171d';x.font='800 64px Inter,Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('NITRO',0,0);x.restore();
+ const t=new THREE.CanvasTexture(c);try{t.anisotropy=4;}catch(e){}return t;}
 function buildRocket(b){
  const g=new THREE.Group();const o={group:g,parts:{},boosters:[],flame:null};
  const metalness=b.mat==='cfrp'?.15:.7,rough=b.mat==='cfrp'?.32:.38;
  const sm=M(MATCOL[b.mat]||0xc9d3e0,{metalness:metalness,roughness:rough});
+ if(!PT)PT=panelTex();sm.map=PT;sm.needsUpdate=true;if(!BT)BT=boosterTex();const bwhite=M(0xffffff,{metalness:.2,roughness:.38,map:BT});
  const dark=M(0x1d222c,{metalness:.7,roughness:.4}),accent=M(0xff8a3d,{metalness:.3,roughness:.45}),white=M(0xf4f6fa,{metalness:.25,roughness:.35}),gold=M(0xb8933f,{metalness:.9,roughness:.3});
  const bellM=M(0x3a3f4a,{metalness:.9,roughness:.35,side:THREE.DoubleSide});
  const tag=(id,grp)=>{(o.parts[id]=o.parts[id]||[]).push(grp);g.add(grp);return grp;};
@@ -75,7 +88,7 @@ function buildRocket(b){
  list.forEach((heavy,i)=>{
   const x=(i%2===0?-1:1)*(heavy?1.05:.95),r=heavy?.38:.27,h=heavy?3.8:3.2;
   const bg=new THREE.Group();bg.position.set(x,0,0);
-  bg.add(mesh(new THREE.CylinderGeometry(r,r,h,32),white,0,h/2+.4,0));
+  bg.add(mesh(new THREE.CylinderGeometry(r,r,h,32),bwhite,0,h/2+.4,0));
   bg.add(mesh(lathe(ogive(r,heavy?1.1:.95,12),32),accent,0,h+.4,0));
   bg.add(mesh(lathe(bellPts(r*.3,r*.62,.5),20),bellM,0,.05,0));
   [.9,h-.5].forEach(y=>{const t=mesh(new THREE.TorusGeometry(r+.004,.018,6,32),white,0,y,0);t.rotation.x=Math.PI/2;bg.add(t);});
@@ -109,7 +122,7 @@ function updParticles(dt){for(let i=0;i<NP;i++){const k=i*3;if(P.life[i]>0){P.li
  geoP.attributes.position.needsUpdate=true;geoP.attributes.color.needsUpdate=true;}
 function explode(x,y,z,n){for(let i=0;i<n;i++){const a=Math.random()*6.283,e=Math.random()*3.14-1.57,s=6+Math.random()*26;emit(x,y+2,z,Math.cos(a)*Math.cos(e)*s,Math.sin(e)*s*.9+6,Math.sin(a)*Math.cos(e)*s,.8+Math.random()*1.8,1,.45+Math.random()*.4,.12);}}
 const LOOK={earth:{sky:[104,160,222],gnd:[62,104,46],orb:[34,96,170],atm:0x58d0f5,pad:0x70747d,sun:0xfff0dc,star:.3},moon:{sky:[3,4,8],gnd:[78,78,86],orb:[135,135,145],atm:null,pad:0x4a4b55,sun:0xffffff,star:1},mars:{sky:[104,58,36],gnd:[92,42,24],orb:[172,80,46],atm:0xff8a3d,pad:0x4d2719,sun:0xffd9b0,star:.25}};
-let camD=0,camP=0,padArms=[],padTower=null,gndMesh=null,padMesh=null,earthBall=null,sunSprite=null,exLight=null,curWorld='earth';
+let PT=null,BT=null,camD=0,camP=0,padArms=[],padTower=null,gndMesh=null,padMesh=null,earthBall=null,sunSprite=null,exLight=null,curWorld='earth';
 function glowTex(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');const gr=x.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.45)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
 function glow(color,size,x,y,z,tex){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:color,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));s.scale.set(size,size,1);s.position.set(x,y,z);return s;}
 function applyWorld(w){curWorld=w;if(!R)return;const L=LOOK[w];gndMesh.material.color.setRGB(L.gnd[0]/255,L.gnd[1]/255,L.gnd[2]/255);padMesh.material.color.setHex(L.pad);sunSprite.material.color.setHex(L.sun);sunL.color.setHex(L.sun);earthBall.visible=(w==='moon');atmo.material.color.setHex(L.atm||0x58d0f5);}
@@ -294,11 +307,11 @@ function launch(){
  if(mode!=='build'||view!=='build')return;closeDeb();actx();
  fl=newFlight(build);prop0=fl.core.prop+fl.boosters.reduce((s,b)=>s+b.prop,0);samples=[];lastSample=-1;simAcc=0;paused=false;visAlt=0;exploded=false;
  debris.forEach(d=>scene&&scene.remove(d.g));debris.length=0;rebuildRocket();coreDone=false;fairDone=false;deployT=-1;if(rk&&rk.parts['solar-wing'])rk.parts['solar-wing'].forEach(w=>{w.visible=false;});
- mode='countdown';cdT=3.2;setLocked(true);$('#launch').hidden=true;$('#log').innerHTML='';
+ mode='countdown';cdT=5.2;setLocked(true);$('#launch').hidden=true;$('#log').innerHTML='';
  $('#tele').hidden=false;$('#speedRow').hidden=false;renderSpeed();$('#hint').textContent='Drag to orbit · Scroll to zoom';setStatus('Countdown');
  cam.dist=17;cam.pol=1.3;announce('Launch sequence started');startRumble();
 }
-function renderSpeed(){$('#speedRow').innerHTML=[1,6,20,60].map(s=>'<button class="btn" data-speed="'+s+'" aria-pressed="'+(speed===s)+'" style="min-height:32px;padding:5px 10px'+(speed===s?';border-color:var(--thrust)':'')+'">'+s+'×</button>').join('')+'<button class="btn" data-pause="1" style="min-height:32px;padding:5px 10px">'+(paused?'Resume':'Pause')+'</button>';}
+function renderSpeed(){$('#speedRow').innerHTML=[1,6,20,60].map(s=>'<button class="btn" data-speed="'+s+'" aria-pressed="'+(speed===s)+'" style="min-height:32px;padding:5px 10px'+(speed===s?';border-color:var(--thrust)':'')+'">'+s+'× '+(s===1?'real time':'')+'</button>').join('')+'<button class="btn" data-pause="1" style="min-height:32px;padding:5px 10px">'+(paused?'Resume':'Pause')+'</button>';}
 function tick(dt){
  if(mode==='countdown'){cdT-=dt;const n=Math.ceil(cdT);const c=$('#count');c.hidden=cdT<=0;if(n>=1&&c.textContent!==String(n)){c.textContent=n;c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');blip(520-n*60,.12,'sine',.04);};if(cdT<=0){c.hidden=true;mode='flight';setStatus('Ascent');ev(fl,'Ignition');flushEv();blip(90,.5,'sawtooth',.06);}return;}
  if(mode!=='flight')return;
